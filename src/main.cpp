@@ -439,11 +439,9 @@ const int pawn_attacked[] = {S(-64, -14), S(-155, -142)};
 
                         // King defense/attack
                         // king distance to square in front of passer
-                        score += pawn_passed_king_distance[0] * (rank - 1) *
-                                max(abs(kings[0] / 8 - rank - 1), abs(kings[0] & 0x7 - file));
-                                
-                        score += pawn_passed_king_distance[1] * (rank - 1) *
-                                max(abs(kings[1] / 8 - rank - 1), abs(kings[1] & 0x7 - file));
+                        for (int i = 0; i < 2; ++i)
+                            score += pawn_passed_king_distance[i] * (rank - 1) *
+                                    max(abs(kings[i] / 8 - rank - 1), abs(kings[i] & 0x7 - file));
                     }
                 } else {
                     // Pawn attacks
@@ -1117,8 +1115,8 @@ int main(
                                                       allocated_time,
                                                       stop);
             stop = true;
-            for (int i = 0; i <= thread_count; ++i)
-                threads[i].join();
+            for (int i = 1; i < thread_count; ++i)
+                threads[i - 1].join();
             cout << "bestmove " << move_str(best_move, pos.flipped) << "\n";
         } else if (word == "position") {
             // Set to startpos
