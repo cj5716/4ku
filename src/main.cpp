@@ -480,10 +480,11 @@ const int pawn_attacked[] = {S(-64, -14), S(-155, -142)};
 
 [[nodiscard]] auto get_hash(const Position &pos) {
     u64 hash = pos.flipped;
+    u64 copy;
 
     // Pieces
     for (int p = Pawn; p < None; p++) {
-        u64 copy = pos.pieces[p] & pos.colour[0];
+        copy = pos.pieces[p] & pos.colour[0];
         while (copy) {
             const int sq = lsb(copy);
             copy &= copy - 1;
@@ -922,12 +923,19 @@ void set_fen(Position &pos, const string &fen) {
             i -= 16;
         } else {
             const int side = c == 'p' || c == 'n' || c == 'b' || c == 'r' || c == 'q' || c == 'k';
-            const int piece = c == 'p' || c == 'P'   ? Pawn
-                              : c == 'n' || c == 'N' ? Knight
-                              : c == 'b' || c == 'B' ? Bishop
-                              : c == 'r' || c == 'R' ? Rook
-                              : c == 'q' || c == 'Q' ? Queen
-                                                     : King;
+            const int piece = side ?  c == 'p'   ? Pawn
+                                      : c == 'n' ? Knight
+                                      : c == 'b' ? Bishop
+                                      : c == 'r' ? Rook
+                                      : c == 'q' ? Queen
+                                                 : King
+                                                 
+                                   :  c == 'P'   ? Pawn
+                                      : c == 'N' ? Knight
+                                      : c == 'B' ? Bishop
+                                      : c == 'R' ? Rook
+                                      : c == 'Q' ? Queen
+                                              : King;
             pos.colour.at(side) ^= 1ULL << i;
             pos.pieces.at(piece) ^= 1ULL << i;
             i++;
