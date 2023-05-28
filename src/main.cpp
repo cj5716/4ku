@@ -158,9 +158,9 @@ vector<TT_Entry> transposition_table;
 
 [[nodiscard]] auto move_str(const Move &move, const int flip) {
     string str;
-    str += 'a' + move.from % 8;
+    str += 'a' + move.from & 0x7;
     str += '1' + (move.from / 8 ^ 7 * flip);
-    str += 'a' + move.to % 8;
+    str += 'a' + move.to & 0x7;
     str += '1' + (move.to / 8 ^ 7 * flip);
     if (move.promo != None) {
         str += "nbrq"[move.promo - Knight];
@@ -412,8 +412,8 @@ const int pawn_attacked[] = {S(-64, -14), S(-155, -142)};
                 phase += phases[p];
                 score += material[p];
 
-                const int rank = sq / 8;
-                const int file = sq % 8;
+                const int rank = sq >> 3;
+                const int file = sq & 0x7;
 
                 // Split quantized PSTs
                 score += pst_rank[p][rank] * 8;
@@ -439,9 +439,11 @@ const int pawn_attacked[] = {S(-64, -14), S(-155, -142)};
 
                         // King defense/attack
                         // king distance to square in front of passer
-                        for (int i = 0; i < 2; ++i)
-                            score += pawn_passed_king_distance[i] * (rank - 1) *
-                                     max(abs(kings[i] / 8 - (rank + 1)), abs(kings[i] % 8 - file));
+                        score += pawn_passed_king_distance[0] * (rank - 1) *
+                                max(abs(kings[0] / 8 - rank - 1), abs(kings[0] & 0x7 - file));
+                                
+                        score += pawn_passed_king_distance[1] * (rank - 1) *
+                                max(abs(kings[1] / 8 - rank - 1), abs(kings[1] & 0x7 - file));
                     }
                 } else {
                     // Pawn attacks
@@ -751,7 +753,7 @@ int alphabeta(Position &pos,
         }
 
         // Late move pruning based on quiet move count
-        if (!in_check && alpha == beta - 1 && num_quiets_evaluated > (3 + depth * depth) / (2 - improving))
+        if (!in_check && alpha == beta - 1 && num_quiets_evaluated > (3 + depth * depth) >> !improving)
             break;
     }
     hash_history.pop_back();
@@ -1115,8 +1117,8 @@ int main(
                                                       allocated_time,
                                                       stop);
             stop = true;
-            for (int i = 1; i < thread_count; ++i)
-                threads[i - 1].join();
+            for (int i = 0; i <= thread_count; ++i)
+                threads[i].join();
             cout << "bestmove " << move_str(best_move, pos.flipped) << "\n";
         } else if (word == "position") {
             // Set to startpos
