@@ -158,9 +158,9 @@ vector<TT_Entry> transposition_table;
 
 [[nodiscard]] auto move_str(const Move &move, const int flip) {
     string str;
-    str += 'a' + move.from & 0x7;
+    str += 'a' + move.from % 8;
     str += '1' + (move.from / 8 ^ 7 * flip);
-    str += 'a' + move.to & 0x7;
+    str += 'a' + move.to % 8;
     str += '1' + (move.to / 8 ^ 7 * flip);
     if (move.promo != None) {
         str += "nbrq"[move.promo - Knight];
@@ -412,8 +412,8 @@ const int pawn_attacked[] = {S(-64, -14), S(-155, -142)};
                 phase += phases[p];
                 score += material[p];
 
-                const int rank = sq >> 3;
-                const int file = sq & 0x7;
+                const int rank = sq / 8;
+                const int file = sq % 8;
 
                 // Split quantized PSTs
                 score += pst_rank[p][rank] * 8;
@@ -441,7 +441,7 @@ const int pawn_attacked[] = {S(-64, -14), S(-155, -142)};
                         // king distance to square in front of passer
                         for (int i = 0; i < 2; ++i)
                             score += pawn_passed_king_distance[i] * (rank - 1) *
-                                    max(abs(kings[i] / 8 - rank - 1), abs(kings[i] & 0x7 - file));
+                                     max(abs(kings[i] / 8 - rank - 1), abs(kings[i] % 8 - file));
                     }
                 } else {
                     // Pawn attacks
