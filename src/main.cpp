@@ -376,6 +376,7 @@ const int pawn_phalanx = S(13, 12);
 const int pawn_passed_blocked[] = {S(-10, -18), S(7, -42), S(13, -75), S(-12, -85)};
 const int pawn_passed_king_distance[] = {S(0, -5), S(-4, 9)};
 const int bishop_pair = S(39, 61);
+const int two_rooks_on_seventh = S(30, 60);
 const int king_shield[] = {S(49, -11), S(37, -10)};
 const int pawn_attacked[] = {S(-64, -14), S(-155, -142)};
 
@@ -395,6 +396,10 @@ const int pawn_attacked[] = {S(-64, -14), S(-155, -142)};
         if (count(pos.colour[0] & pos.pieces[Bishop]) == 2)
             score += bishop_pair;
 
+        // Two rooks on seventh
+        if (count(pos.colour[0] & pos.pieces[Rook]) == 2 && lsb(pos.colour[0] & pos.pieces[Rook]) / 8 == 6 && count((east(rooks[0]) | west(rooks[0])) & rooks[0]))
+            score += two_rooks_on_seventh;
+        
         // Doubled pawns
         score += pawn_doubled * count((north(pawns[0]) | north(north(pawns[0]))) & pawns[0]);
 
