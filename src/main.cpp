@@ -483,17 +483,13 @@ const int pawn_attacked[] = {S(-64, -14), S(-155, -142)};
 
     // Pieces
     for (int p = Pawn; p < None; p++) {
-        u64 copy = pos.pieces[p] & pos.colour[0];
-        while (copy) {
-            const int sq = lsb(copy);
-            copy &= copy - 1;
-            hash ^= keys[p * 64 + sq];
-        }
-        copy = pos.pieces[p] & pos.colour[1];
-        while (copy) {
-            const int sq = lsb(copy);
-            copy &= copy - 1;
-            hash ^= keys[(p + 6) * 64 + sq];
+        for (int i = 0; i < 2; ++i) {
+            u64 copy = pos.pieces[p] & pos.colour[i];
+            while (copy) {
+                const int sq = lsb(copy);
+                copy &= copy - 1;
+                hash ^= keys[(p + 6 * i) * 64 + sq];
+            }
         }
     }
 
