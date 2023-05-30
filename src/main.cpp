@@ -397,7 +397,7 @@ const int pawn_attacked[] = {S(-64, -14), S(-155, -142)};
             score += bishop_pair;
 
         // Two rooks on seventh
-        if (count(pos.colour[0] & pos.pieces[Rook]) == 2 && lsb(pos.colour[0] & pos.pieces[Rook]) / 8 == 6 && count((east(rooks[0]) | west(rooks[0])) & rooks[0]))
+        if (count(pos.colour[0] & pos.pieces[Rook]) == 2 && lsb(pos.colour[0] & pos.pieces[Rook]) / 8 == 6)
             score += two_rooks_on_seventh;
         
         // Doubled pawns
