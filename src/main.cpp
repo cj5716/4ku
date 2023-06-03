@@ -828,11 +828,12 @@ auto iteratively_deepen(Position &pos,
     for (int i = 1; i < 128; ++i) {
         auto window = 40;
         auto research = 0;
+        auto fh = 0;
     research:
         const auto newscore = alphabeta(pos,
                                         score - window,
                                         score + window,
-                                        i,
+                                        i - fh,
                                         0,
                                         // minify enable filter delete
                                         nodes,
@@ -883,6 +884,7 @@ auto iteratively_deepen(Position &pos,
         // minify disable filter delete
 
         if (newscore >= score + window || newscore <= score - window) {
+            fh = newscore >= score + window && i > 1;
             window <<= ++research;
             score = newscore;
             goto research;
