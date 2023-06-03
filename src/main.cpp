@@ -708,6 +708,10 @@ int alphabeta(Position &pos,
             if (reduction > 0 && score > alpha) {
                 reduction = 0;
                 goto zero_window;
+                
+            } else if (score >= beta) {
+                reduction = (depth > 7 && tt_entry.move == no_move);
+                goto full_window;
             }
 
             if (score > alpha && score < beta)
