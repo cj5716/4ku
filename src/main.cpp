@@ -710,8 +710,10 @@ int alphabeta(Position &pos,
                 goto zero_window;
             }
 
-            if (score > alpha && score < beta)
+            if (score > alpha && score < beta) {
+                depth -= depth > 3 && tt_entry.move == no_move;
                 goto full_window;
+            }
         }
 
         // Exit early if out of time
