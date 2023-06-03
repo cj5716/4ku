@@ -711,7 +711,7 @@ int alphabeta(Position &pos,
             }
 
             if (score > alpha && score < beta) {
-                depth -= depth > 7 && tt_entry.move == no_move;
+                depth -= (alpha == beta - 1) && depth > 7 && tt_entry.move == no_move;
                 goto full_window;
             }
         }
