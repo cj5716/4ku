@@ -828,10 +828,12 @@ auto iteratively_deepen(Position &pos,
     for (int i = 1; i < 128; ++i) {
         int window = 32 + score * score / 16384;
         auto research = 0;
+        int alpha = score - window;
+        int beta = score + window;
     research:
         const auto newscore = alphabeta(pos,
-                                        score - window,
-                                        score + window,
+                                        alpha,
+                                        beta,
                                         i,
                                         0,
                                         // minify enable filter delete
@@ -854,9 +856,9 @@ auto iteratively_deepen(Position &pos,
             cout << "info";
             cout << " depth " << i;
             cout << " score cp " << newscore;
-            if (newscore >= score + window) {
+            if (newscore >= beta) {
                 cout << " lowerbound";
-            } else if (newscore <= score - window) {
+            } else if (newscore <= alpha) {
                 cout << " upperbound";
             }
             cout << " time " << elapsed;
@@ -865,7 +867,7 @@ auto iteratively_deepen(Position &pos,
                 cout << " nps " << nodes * 1000 / elapsed;
             }
             // Not a lowerbound - a fail low won't have a meaningful PV.
-            if (newscore > score - window) {
+            if (newscore > alpha) {
                 cout << " pv";
                 print_pv(pos, stack[0].move, hash_history);
             }
@@ -882,13 +884,18 @@ auto iteratively_deepen(Position &pos,
         }
         // minify disable filter delete
 
-        if (newscore >= score + window || newscore <= score - window) {
+        score = newscore;
+        if (newscore >= beta) {
             window <<= ++research;
-            score = newscore;
+            beta = score + window;
+            goto research;
+            
+        } else if (newscore <= alpha) {
+            window <<= ++research;
+            beta = (alpha + beta) / 2;
+            alpha = score - window;
             goto research;
         }
-
-        score = newscore;
 
         // Early exit after completed ply
         if (!research && now() >= start_time + allocated_time / 10)
