@@ -553,7 +553,7 @@ int alphabeta(Position &pos,
     }
     // Internal iterative reduction
     else if (depth > 3)
-        depth--;
+        depth -= 1 + !(alpha == beta - 1);
 
     const int static_eval = eval(pos);
     stack[ply].score = static_eval;
