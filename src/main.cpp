@@ -417,7 +417,7 @@ const int pawn_attacked[] = {S(-64, -14), S(-155, -142)};
 
                 // Split quantized PSTs
                 score += pst_rank[p][rank] * 8;
-                score += pst_file[p][file > 4 ? 8 - file : file] * 8;
+                score += pst_file[p][file > 3 ? 7 - file : file] * 8;
 
                 // Pawn protection
                 const u64 piece_bb = 1ULL << sq;
