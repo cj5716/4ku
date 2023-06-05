@@ -827,7 +827,6 @@ auto iteratively_deepen(Position &pos,
     int score = 0;
     for (int i = 1; i < 128; ++i) {
         int window = 32 + score * score / 16384;
-        auto research = 0;
         int alpha = score - window;
         int beta = score + window;
     research:
