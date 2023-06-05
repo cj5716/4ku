@@ -831,13 +831,9 @@ auto iteratively_deepen(Position &pos,
         // Hard time limit exceeded
         if (now() >= start_time + allocated_time || stop)
             break;
-<<<<<<< HEAD
         i32 window = 32 + score * score / 16384;
-=======
-        int window = 32 + score * score / 16384;
-        int alpha = i >= 3 ? score - window : -inf;
-        int beta = i >= 3 ? score + window : inf;
->>>>>>> c33a964 (Bench 1395162)
+        i32 alpha = i >= 3 ? score - window : -inf;
+        i32 beta = i >= 3 ? score + window : inf;
         
         while (true) {
             const auto newscore = alphabeta(pos,
