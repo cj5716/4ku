@@ -887,14 +887,13 @@ auto iteratively_deepen(Position &pos,
                 
             } else {
                 score = newscore;
-                
-                // Early exit after completed ply
-                if (now() >= start_time + allocated_time / 10)
-                    return stack[0].move;
-                else
-                    break;
+                break;
             }
+            
         }
+        // Early exit after completed ply
+        if (now() >= start_time + allocated_time / 10)
+            break;
         
     }
     return stack[0].move;
