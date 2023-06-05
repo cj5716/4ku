@@ -886,19 +886,19 @@ auto iteratively_deepen(Position &pos,
 
         score = newscore;
         if (newscore >= beta) {
-            window <<= ++research;
+            window <<= 1;
             beta = score + window;
             goto research;
             
         } else if (newscore <= alpha) {
-            window <<= ++research;
+            window <<= 1;
             beta = (alpha + beta) / 2;
             alpha = score - window;
             goto research;
         }
 
         // Early exit after completed ply
-        if (!research && now() >= start_time + allocated_time / 10)
+        else if (now() >= start_time + allocated_time / 10)
             break;
     }
     return stack[0].move;
