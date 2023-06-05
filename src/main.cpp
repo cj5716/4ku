@@ -1087,8 +1087,7 @@ int main(
             // minify disable filter delete
 
             const auto start = now();
-            const int num_moves = movegen(pos, moves, false);
-            const auto allocated_time = (pos.flipped ? btime : wtime) / (num_moves == 1 ? 32 : 3);
+            const auto allocated_time = (pos.flipped ? btime : wtime) / 4;
 
             // Lazy SMP
             vector<thread> threads;
