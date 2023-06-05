@@ -891,16 +891,15 @@ auto iteratively_deepen(Position &pos,
 
             score = newscore;
             if (score <= alpha) {
-                window <<= 1;
+
                 beta = (alpha + beta) / 2;
                 alpha = max(score - window, -inf);
 
-            } else if (score >= beta) {
-                window <<= 1;
+            } else if (score >= beta)
                 beta = min(score + window, inf);
-            } else
+            else
                 break;
-            
+            window <<= 1;
         }
         // Early exit after completed ply
         if (now() >= start_time + allocated_time / 10)
