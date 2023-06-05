@@ -831,12 +831,18 @@ auto iteratively_deepen(Position &pos,
         // Hard time limit exceeded
         if (now() >= start_time + allocated_time || stop)
             break;
+<<<<<<< HEAD
         i32 window = 32 + score * score / 16384;
+=======
+        int window = 32 + score * score / 16384;
+        int alpha = i >= 3 ? score - window : -inf;
+        int beta = i >= 3 ? score + window : inf;
+>>>>>>> c33a964 (Bench 1395162)
         
         while (true) {
             const auto newscore = alphabeta(pos,
-                                            score - window,
-                                            score + window,
+                                            alpha,
+                                            beta,
                                             i,
                                             0,
                                             // minify enable filter delete
@@ -857,9 +863,9 @@ auto iteratively_deepen(Position &pos,
                 cout << "info";
                 cout << " depth " << i;
                 cout << " score cp " << newscore;
-                if (newscore >= score + window) {
+                if (newscore >= beta) {
                     cout << " lowerbound";
-                } else if (newscore <= score - window) {
+                } else if (newscore <= alpha) {
                     cout << " upperbound";
                 }
                 cout << " time " << elapsed;
@@ -868,7 +874,7 @@ auto iteratively_deepen(Position &pos,
                     cout << " nps " << nodes * 1000 / elapsed;
                 }
                 // Not a lowerbound - a fail low won't have a meaningful PV.
-                if (newscore > score - window) {
+                if (newscore >alpha) {
                     cout << " pv";
                     print_pv(pos, stack[0].move, hash_history);
                 }
@@ -883,14 +889,17 @@ auto iteratively_deepen(Position &pos,
             }
             // minify disable filter delete
 
-            if (newscore >= score + window || newscore <= score - window) {
-                score = newscore;
+            score = newscore;
+            if (score <= alpha) {
                 window <<= 1;
-                
-            } else {
-                score = newscore;
+                beta = (alpha + beta) / 2;
+                alpha = max(score - window, -inf);
+
+            } else if (score >= beta) {
+                window <<= 1;
+                beta = min(score + window, inf);
+            } else
                 break;
-            }
             
         }
         // Early exit after completed ply
