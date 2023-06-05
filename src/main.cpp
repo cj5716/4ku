@@ -885,7 +885,7 @@ auto iteratively_deepen(Position &pos,
 
         if (newscore >= score + window || newscore <= score - window) {
             window <<= ++research;
-            failed_high = (newscore >= score + window && depth > 1);
+            failed_high = (newscore >= score + window && i > 1);
             score = newscore;
             goto research;
         }
