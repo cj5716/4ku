@@ -828,8 +828,8 @@ auto iteratively_deepen(Position &pos,
     for (int i = 1; i < 128; ++i) {
         int window = 32 + score * score / 16384;
         auto research = 0;
-        int alpha = score - window;
-        int beta = score + window;
+        int alpha = i >= 3 ? score - window : -inf;
+        int beta = i >= 3 ? score + window : inf;
     research:
         const auto newscore = alphabeta(pos,
                                         alpha,
@@ -885,15 +885,15 @@ auto iteratively_deepen(Position &pos,
         // minify disable filter delete
 
         score = newscore;
-        if (newscore >= beta) {
-            window <<= ++research;
-            beta = score + window;
-            goto research;
-            
-        } else if (newscore <= alpha) {
+        if (newscore <= alpha) {
             window <<= ++research;
             beta = (alpha + beta) / 2;
-            alpha = score - window;
+            alpha = max(score - window, -inf);
+            goto research;
+            
+        } else if (newscore >= beta) {
+            window <<= ++research;
+            beta = min(score + window, inf);
             goto research;
         }
 
