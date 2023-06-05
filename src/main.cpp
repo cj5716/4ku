@@ -878,7 +878,6 @@ Move iteratively_deepen(Position &pos,
             if (bench_depth > 0 && i >= bench_depth && newscore < score + window && newscore > score - window) {
                 total_nodes += nodes;
                 return no_move;
-                }
             }
             // minify disable filter delete
 
