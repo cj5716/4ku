@@ -828,10 +828,12 @@ auto iteratively_deepen(Position &pos,
     for (int i = 1; i < 128; ++i) {
         int window = 32 + score * score / 16384;
         auto research = 0;
+        int alpha = i >= 3 ? score - window : -inf;
+        int beta = i >= 3 ? score + window : inf;
     research:
         const auto newscore = alphabeta(pos,
-                                        score - window,
-                                        score + window,
+                                        alpha,
+                                        beta,
                                         i,
                                         0,
                                         // minify enable filter delete
@@ -854,9 +856,9 @@ auto iteratively_deepen(Position &pos,
             cout << "info";
             cout << " depth " << i;
             cout << " score cp " << newscore;
-            if (newscore >= score + window) {
+            if (newscore >= beta) {
                 cout << " lowerbound";
-            } else if (newscore <= score - window) {
+            } else if (newscore <= alpha) {
                 cout << " upperbound";
             }
             cout << " time " << elapsed;
@@ -865,7 +867,7 @@ auto iteratively_deepen(Position &pos,
                 cout << " nps " << nodes * 1000 / elapsed;
             }
             // Not a lowerbound - a fail low won't have a meaningful PV.
-            if (newscore > score - window) {
+            if (newscore > alpha) {
                 cout << " pv";
                 print_pv(pos, stack[0].move, hash_history);
             }
@@ -882,8 +884,10 @@ auto iteratively_deepen(Position &pos,
         }
         // minify disable filter delete
 
-        if (newscore >= score + window || newscore <= score - window) {
+        if (newscore >= beta || newscore <= alpha) {
             window <<= ++research;
+            alpha = max(score - window, -inf);
+            beta = min(score + window, inf);
             score = newscore;
             goto research;
         }
