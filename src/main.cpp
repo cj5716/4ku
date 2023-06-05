@@ -885,9 +885,10 @@ auto iteratively_deepen(Position &pos,
                 score = newscore;
                 window <<= 1;
                 
-            // Early exit after completed ply
             } else {
                 score = newscore;
+                
+                // Early exit after completed ply
                 if (now() >= start_time + allocated_time / 10)
                     return stack[0].move;
                 else
