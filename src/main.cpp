@@ -830,8 +830,8 @@ Move iteratively_deepen(Position &pos,
         // Hard time limit exceeded
         if (now() >= start_time + allocated_time || stop)
             break;
-        i32 window = 32 + score * score / 16384;
         
+        i32 window = 32 + score * score / 16384;
         while (true) {
             const i32 newscore = alphabeta(pos,
                                             score - window,
@@ -882,14 +882,17 @@ Move iteratively_deepen(Position &pos,
             }
             // minify disable filter delete
 
-            if (newscore >= score + window || newscore <= score - window) {
-                score = newscore;
+            score = newscore;
+            if (score <= alpha) {
                 window <<= 1;
-                
-            } else {
-                score = newscore;
+                beta = (alpha + beta) / 2;
+                alpha = max(score - window, -inf);
+
+            } else if (score >= beta) {
+                window <<= 1;
+                beta = min(score + window, inf);
+            } else
                 break;
-            }
             
         }
         // Early exit after completed ply
