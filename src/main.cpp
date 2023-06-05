@@ -552,8 +552,29 @@ int alphabeta(Position &pos,
         }
     }
     // Internal iterative reduction
-    else if (depth > 3)
-        depth--;
+    else {
+        if (depth > 3)
+            depth--;
+        
+        if (!(alpha == beta - 1)) {
+            depth--;
+            if (depth <= 0)
+                return alphabeta(pos,
+                                 alpha,
+                                 beta,
+                                 0,
+                                 ply + 1,
+                                 // minify enable filter delete
+                                 nodes,
+                                 // minify disable filter delete
+                                 stop_time,
+                                 stop,
+                                 stack,
+                                 hh_table,
+                                 hash_history,
+                                 false);
+        }
+    }
 
     const int static_eval = eval(pos);
     stack[ply].score = static_eval;
