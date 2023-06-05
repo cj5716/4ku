@@ -568,7 +568,7 @@ int alphabeta(Position &pos,
     if (ply > 0 && !in_qsearch) {
         if (!in_check && alpha == beta - 1) {
             // Reverse futility pruning
-            if (depth < 9 && static_eval - 150 * (depth - improving) >= beta) {
+            if (depth < 9 && static_eval - 66 * (depth - improving) >= beta) {
                 return beta;
             }
 
