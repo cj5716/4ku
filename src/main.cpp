@@ -1127,7 +1127,7 @@ i32 main(
             // minify disable filter delete
 
             const auto start = now();
-            const auto allocated_time = (pos.flipped ? btime : wtime) / 3;
+            const auto allocated_time = (pos.flipped ? btime : wtime) * (count((pos.colour[0] | pos.colour[1]) & ~pos.pieces[Pawn]) * 5 + count((pos.colour[0] | pos.colour[1]) & pos.pieces[Pawn])) / 256;
 
             // Lazy SMP
             vector<thread> threads;
