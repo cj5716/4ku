@@ -885,7 +885,6 @@ auto iteratively_deepen(Position &pos,
             // minify disable filter delete
 
             if (score <= alpha) {
-
                 beta = (alpha + beta) / 2;
                 alpha = max(score - window, -inf);
 
