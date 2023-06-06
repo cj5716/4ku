@@ -855,7 +855,7 @@ Move iteratively_deepen(Position &pos,
                 const u64 elapsed = now() - start_time;
                 cout << "info";
                 cout << " depth " << i;
-                cout << " score cp " << score;
+                cout << " score cp " << newscore;
                 if (newscore >= score + window) {
                     cout << " lowerbound";
                 } else if (newscore <= score - window) {
@@ -881,9 +881,12 @@ Move iteratively_deepen(Position &pos,
             }
             // minify disable filter delete
 
-            if (score - window < newscore && newscore < score + window)
+            if (score - window < newscore && newscore < score + window) {
+                score = newscore;
                 break;
+            }
             
+            score = newscore;
             window <<= 1;
         }
         // Early exit after completed ply
