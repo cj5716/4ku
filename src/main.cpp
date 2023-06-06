@@ -833,32 +833,32 @@ Move iteratively_deepen(Position &pos,
         
         i32 window = 32 + score * score / 16384;
         while (true) {
-            score = alphabeta(pos,
-                              alpha,
-                              beta,
-                              i,
-                              0,
-                              // minify enable filter delete
-                              nodes,
-                              // minify disable filter delete
-                              start_time + allocated_time,
-                              stop,
-                              stack,
-                              hh_table,
-                              hash_history);
+            const auto newscore = alphabeta(pos,
+                                            score - window,
+                                            score + window,
+                                            i,
+                                            0,
+                                            // minify enable filter delete
+                                            nodes,
+                                            // minify disable filter delete
+                                            start_time + allocated_time,
+                                            stop,
+                                            stack,
+                                            hh_table,
+                                            hash_history);
                 
             // minify enable filter delete
             // The main search thread prints with every iteration normally, or when the target depth has finished when
             // benchmarking
             if (thread_id == 0 &&
-                (bench_depth == 0 || i == bench_depth && score < beta && score > alpha)) {
+                (bench_depth == 0 || i == bench_depth && newscore < score + window && newscore > score - window)) {
                 const u64 elapsed = now() - start_time;
                 cout << "info";
                 cout << " depth " << i;
                 cout << " score cp " << score;
-                if (score >= beta) {
+                if (newscore >= score + window) {
                     cout << " lowerbound";
-                } else if (score <= alpha) {
+                } else if (newscore <= score - window) {
                     cout << " upperbound";
                 }
                 cout << " time " << elapsed;
@@ -867,7 +867,7 @@ Move iteratively_deepen(Position &pos,
                     cout << " nps " << nodes * 1000 / elapsed;
                 }
                 // Not a lowerbound - a fail low won't have a meaningful PV.
-                if (score > alpha) {
+                if (newscore > score - window) {
                     cout << " pv";
                     print_pv(pos, stack[0].move, hash_history);
                 }
@@ -875,21 +875,15 @@ Move iteratively_deepen(Position &pos,
             }
 
             // OpenBench compliance
-            if (bench_depth > 0 && i >= bench_depth && score < beta && score > alpha) {
+            if (bench_depth > 0 && i >= bench_depth && newscore < score + window && newscore > score - window) {
                 total_nodes += nodes;
                 return no_move;
             }
             // minify disable filter delete
 
-            if (score <= alpha) {
-
-                beta = (alpha + beta) / 2;
-                alpha = max(score - window, -inf);
-
-            } else if (score >= beta)
-                beta = min(score + window, inf);
-            else
+            if (score - window < newscore && newscore < score + window)
                 break;
+            
             window <<= 1;
         }
         // Early exit after completed ply
