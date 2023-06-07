@@ -710,7 +710,7 @@ i32 alphabeta(Position &pos,
                 goto zero_window;
             }
 
-            if (score > alpha && score < beta)
+            if (!(alpha == beta - 1) && (score > alpha && score < beta || i == 1))
                 goto full_window;
         }
 
