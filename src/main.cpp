@@ -535,8 +535,11 @@ i32 alphabeta(Position &pos,
     if (ply > 0 && !in_qsearch) {
         // Repetition detection
         for (const u64 old_hash : hash_history)
-            if (old_hash == tt_key)
-                return 0;
+            if (old_hash == tt_key && alpha < 0) {
+                alpha = 0;
+                if (alpha >= beta)
+                    return alpha;
+            }
     }
 
     // TT Probing
