@@ -705,12 +705,12 @@ i32 alphabeta(Position &pos,
                                hh_table,
                                hash_history);
 
-            if (reduction > 0 && score > alpha) {
+            if (reduction > 0 && score > alpha && ply > 0) {
                 reduction = 0;
                 goto zero_window;
             }
 
-            if (!(alpha == beta - 1) && (score > alpha && score < beta || i == 1))
+            if (alpha < beta - 1 && (score > alpha && (score < beta || ply == 0)))
                 goto full_window;
         }
 
