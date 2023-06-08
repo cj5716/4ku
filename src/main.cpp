@@ -544,12 +544,10 @@ i32 alphabeta(Position &pos,
     Move tt_move{};
     if (tt_entry.key == tt_key) {
         tt_move = tt_entry.move;
-        if (ply > 0 && tt_entry.depth >= depth) {
+        if (ply > 0 && tt_entry.depth >= depth)
             if (tt_entry.flag == Upper && tt_entry.score <= alpha || tt_entry.flag == Lower && tt_entry.score >= beta ||
-                tt_entry.flag == Exact) {
+                tt_entry.flag == Exact)
                 return tt_entry.score;
-            }
-        }
     }
     // Internal iterative reduction
     else if (depth > 3)
@@ -628,12 +626,11 @@ i32 alphabeta(Position &pos,
         // Find best move remaining
         i32 best_move_index = i;
         if (i == 0 && !(no_move == tt_move)) {
-            for (i32 j = i; j < num_moves; ++j) {
+            for (i32 j = i; j < num_moves; ++j)
                 if (moves[j] == tt_move) {
                     best_move_index = j;
                     break;
                 }
-            }
         } else
             for (i32 j = i; j < num_moves; ++j)
                 if (move_scores[j] > move_scores[best_move_index])
@@ -728,11 +725,13 @@ i32 alphabeta(Position &pos,
 
         if (score > best_score) {
             best_score = score;
-            best_move = move;
             if (score > alpha) {
+                best_move = move;
                 tt_flag = Exact;
                 alpha = score;
                 stack[ply].move = move;
+                if (score < beta && depth > 1 && beta < 16384 && score > -16384)
+                    depth--;
             }
         }
 
@@ -740,10 +739,9 @@ i32 alphabeta(Position &pos,
             tt_flag = Lower;
             if (!gain) {
                 hh_table[pos.flipped][move.from][move.to] += depth * depth;
-                for (i32 j = 0; j < num_quiets_evaluated - 1; ++j) {
+                for (i32 j = 0; j < num_quiets_evaluated - 1; ++j)
                     hh_table[pos.flipped][stack[ply].quiets_evaluated[j].from][stack[ply].quiets_evaluated[j].to] -=
                         depth * depth;
-                }
                 stack[ply].killer = move;
             }
             break;
