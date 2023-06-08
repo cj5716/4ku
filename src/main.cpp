@@ -536,7 +536,7 @@ i32 alphabeta(Position &pos,
         // Repetition detection
         for (const u64 old_hash : hash_history)
             if (old_hash == tt_key)
-                return 0;
+                return 1;
     }
 
     // TT Probing
@@ -557,7 +557,7 @@ i32 alphabeta(Position &pos,
 
     const i32 static_eval = eval(pos);
     stack[ply].score = static_eval;
-    const i32 improving = ply > 1 && static_eval > stack[ply - 2].score;
+    const i32 improving = ply > 1 && (static_eval > stack[ply - 2].score || stack[ply - 2].score == 0);
 
     if (in_qsearch && static_eval > alpha) {
         if (static_eval >= beta)
