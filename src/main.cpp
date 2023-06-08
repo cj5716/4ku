@@ -533,6 +533,14 @@ i32 alphabeta(Position &pos,
     const u64 tt_key = get_hash(pos);
 
     if (ply > 0 && !in_qsearch) {
+        if (count(pos.colour[0] | pos.colour[1]) == 2  // KvK
+            || (count(pos.colour[0] | pos.colour[1]) == 3 &&
+                count(pos.pieces[Knight] | pos.pieces[Bishop]))  // KNvK or KBvK
+            || (count(pos.colour[0] | pos.colour[1]) == 4        // KNNvK or KNvKN or KBvKB (continued on next line)
+                && (count(pos.pieces[Knight]) == 2 ||
+                    count(pos.colour[0] & pos.pieces[Bishop]) == count(pos.colour[1] & pos.pieces[Bishop]) == 1)))
+            return 0;
+
         // Repetition detection
         for (const u64 old_hash : hash_history)
             if (old_hash == tt_key)
