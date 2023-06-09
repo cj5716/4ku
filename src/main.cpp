@@ -616,9 +616,10 @@ i32 alphabeta(Position &pos,
         if (i == !(no_move == tt_move)) {
             for (i32 j = 0; j < num_moves; ++j) {
                 const i32 gain = max_material[moves[j].promo] + max_material[piece_on(pos, moves[j].to)];
-                if (gain)
+                if (gain) {
+                    const i32 gain = gain + hh_table[pos.flipped][moves[j].from][moves[j].to] / 4096;
                     move_scores[j] = gain + (1LL << 54);
-                else if (moves[j] == stack[ply].killer)
+                } else if (moves[j] == stack[ply].killer)
                     move_scores[j] = 1LL << 50;
                 else
                     move_scores[j] = hh_table[pos.flipped][moves[j].from][moves[j].to];
