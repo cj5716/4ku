@@ -83,6 +83,7 @@ struct [[nodiscard]] Stack {
     int64_t move_scores[256];
     Move move;
     Move killer;
+    i32 in_check;
     i32 score;
 };
 
@@ -526,8 +527,8 @@ i32 alphabeta(Position &pos,
         return eval(pos);
 
     // Check extensions
-    const i32 in_check = is_attacked(pos, lsb(pos.colour[0] & pos.pieces[King]));
-    depth += in_check;
+    stack[ply].in_check = is_attacked(pos, lsb(pos.colour[0] & pos.pieces[King]));
+    depth += stack[ply].in_check;
 
     const i32 in_qsearch = depth <= 0;
     const u64 tt_key = get_hash(pos);
@@ -555,7 +556,7 @@ i32 alphabeta(Position &pos,
 
     const i32 static_eval = eval(pos);
     stack[ply].score = static_eval;
-    const i32 improving = ply > 1 && static_eval > stack[ply - 2].score;
+    const i32 improving = !stack[ply - 2].in_check ? ply > 1 && static_eval > stack[ply - 2].score : true;
 
     if (in_qsearch && static_eval > alpha) {
         if (static_eval >= beta)
@@ -564,7 +565,7 @@ i32 alphabeta(Position &pos,
     }
 
     if (ply > 0 && !in_qsearch) {
-        if (!in_check && alpha == beta - 1) {
+        if (!stack[ply].in_check && alpha == beta - 1) {
             // Reverse futility pruning
             if (depth < 7) {
                 const i32 margins[] = {0, 50, 100, 200, 300, 500, 800};
@@ -644,13 +645,14 @@ i32 alphabeta(Position &pos,
         const i32 gain = max_material[move.promo] + max_material[piece_on(pos, move.to)];
 
         // Delta pruning
-        if (in_qsearch && !in_check && static_eval + 50 + gain < alpha) {
+        if (in_qsearch && !stack[ply].in_check && static_eval + 50 + gain < alpha) {
             best_score = alpha;
             break;
         }
 
         // Forward futility pruning
-        if (depth < 8 && !in_qsearch && !in_check && !(move == tt_move) && static_eval + 100 * depth + gain < alpha) {
+        if (depth < 8 && !in_qsearch && !stack[ply].in_check && !(move == tt_move) &&
+            static_eval + 100 * depth + gain < alpha) {
             best_score = alpha;
             break;
         }
@@ -747,14 +749,14 @@ i32 alphabeta(Position &pos,
         }
 
         // Late move pruning based on quiet move count
-        if (!in_check && alpha == beta - 1 && num_quiets_evaluated > 3 + depth * depth >> !improving)
+        if (!stack[ply].in_check && alpha == beta - 1 && num_quiets_evaluated > 3 + depth * depth >> !improving)
             break;
     }
     hash_history.pop_back();
 
     // Return mate or draw scores if no moves found
     if (best_score == -inf)
-        return in_qsearch ? alpha : in_check ? ply - mate_score : 0;
+        return in_qsearch ? alpha : stack[ply].in_check ? ply - mate_score : 0;
 
     // Save to TT
     tt_entry = {tt_key, best_move == no_move ? tt_move : best_move, best_score, in_qsearch ? 0 : depth, tt_flag};
