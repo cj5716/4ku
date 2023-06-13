@@ -621,7 +621,7 @@ i32 alphabeta(Position &pos,
                 else if (moves[j] == stack[ply].killer)
                     move_scores[j] = 1LL << 50;
                 else
-                    move_scores[j] = hh_table[pos.flipped][moves[j].from][moves[j].to] * (stack[ply].static_eval - stack[ply - 1].static_eval) / 3;
+                    move_scores[j] = hh_table[pos.flipped][moves[j].from][moves[j].to] + (stack[ply].static_eval - stack[ply - 1].static_eval) * 16;
             }
         }
 
