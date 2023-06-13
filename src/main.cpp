@@ -38,7 +38,6 @@ using u64 = uint64_t;
 // Constants
 const i32 mate_score = 1 << 15;
 const i32 inf = 1 << 16;
-const i32 value_none = -inf - 1;
 
 enum
 {
