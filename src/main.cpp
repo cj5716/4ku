@@ -38,6 +38,7 @@ using u64 = uint64_t;
 // Constants
 const i32 mate_score = 1 << 15;
 const i32 inf = 1 << 16;
+const i32 value_none = -inf - 1;
 
 enum
 {
@@ -84,6 +85,7 @@ struct [[nodiscard]] Stack {
     Move move;
     Move killer;
     i32 score;
+    i32 static_eval;
 };
 
 enum
@@ -555,6 +557,7 @@ i32 alphabeta(Position &pos,
 
     const i32 static_eval = eval(pos);
     stack[ply].score = static_eval;
+    stack[ply].static_eval = static_eval;
     const i32 improving = ply > 1 && static_eval > stack[ply - 2].score;
 
     if (in_qsearch && static_eval > alpha) {
@@ -619,7 +622,7 @@ i32 alphabeta(Position &pos,
                 else if (moves[j] == stack[ply].killer)
                     move_scores[j] = 1LL << 50;
                 else
-                    move_scores[j] = hh_table[pos.flipped][moves[j].from][moves[j].to];
+                    move_scores[j] = hh_table[pos.flipped][moves[j].from][moves[j].to] + stack[ply].static_eval - stack[ply - 1].static_eval;
             }
         }
 
