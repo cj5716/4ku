@@ -398,9 +398,6 @@ const i32 pawn_attacked[] = {S(-64, -14), S(-155, -142)};
         // Doubled pawns
         score += pawn_doubled * count((north(pawns[0]) | north(north(pawns[0]))) & pawns[0]);
 
-        // Phalanx pawns
-        score += (pawn_phalanx + lsb(pawns[0]) / 8) * count(west(pawns[0]) & pawns[0]);
-
         // For each piece type
         for (i32 p = 0; p < 6; ++p) {
             u64 copy = pos.colour[0] & pos.pieces[p];
@@ -418,6 +415,10 @@ const i32 pawn_attacked[] = {S(-64, -14), S(-155, -142)};
                 // Split quantized PSTs
                 score += pst_rank[p][rank] * 8;
                 score += pst_file[p][file] * 8;
+                
+                if (p == Pawn)
+                    // Phalanx pawns
+                    score += (pawn_phalanx + rank) * count(west(pawns[0]) & pawns[0]);
 
                 // Pawn protection
                 const u64 piece_bb = 1ULL << sq;
