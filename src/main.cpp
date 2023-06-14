@@ -372,7 +372,7 @@ const i32 pawn_protection[] = {S(30, 13), S(6, 12), S(4, 6), S(11, 2), S(-9, 11)
 const i32 passers[] = {S(4, 11), S(40, 38), S(80, 95), S(269, 162)};
 const i32 pawn_passed_protected = S(15, 19);
 const i32 pawn_doubled = S(-18, -30);
-const i32 pawn_phalanx = S(13, 12);
+const i32 pawn_phalanx = S(10, 9);
 const i32 pawn_passed_blocked[] = {S(-10, -18), S(7, -42), S(13, -75), S(-12, -85)};
 const i32 pawn_passed_king_distance[] = {S(0, -5), S(-4, 9)};
 const i32 bishop_pair = S(39, 61);
@@ -399,7 +399,7 @@ const i32 pawn_attacked[] = {S(-64, -14), S(-155, -142)};
         score += pawn_doubled * count((north(pawns[0]) | north(north(pawns[0]))) & pawns[0]);
 
         // Phalanx pawns
-        score += pawn_phalanx * count(west(pawns[0]) & pawns[0]);
+        score += (pawn_phalanx + lsb(pawns[0]) / 8) * count(west(pawns[0]) & pawns[0]);
 
         // For each piece type
         for (i32 p = 0; p < 6; ++p) {
