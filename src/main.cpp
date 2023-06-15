@@ -370,9 +370,9 @@ const i32 open_files[][3] = {
 };
 const i32 pawn_protection[] = {S(30, 13), S(6, 12), S(4, 6), S(11, 2), S(-9, 11), S(-31, 21)};
 const i32 passers[] = {S(4, 11), S(40, 38), S(80, 95), S(269, 162)};
-const i32 pawn_passed_protected = S(15, 19);
+const i32 pawn_passed_protected = S(12, 16);
 const i32 pawn_doubled = S(-18, -30);
-const i32 pawn_phalanx = S(11, 10);
+const i32 pawn_phalanx = S(13, 12);
 const i32 pawn_passed_blocked[] = {S(-10, -18), S(7, -42), S(13, -75), S(-12, -85)};
 const i32 pawn_passed_king_distance[] = {S(0, -5), S(-4, 9)};
 const i32 bishop_pair = S(39, 61);
