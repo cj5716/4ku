@@ -650,7 +650,7 @@ i32 alphabeta(Position &pos,
         }
 
         // Forward futility pruning
-        if (depth < 8 && !in_qsearch && !in_check && !(move == tt_move) && static_eval + 96 * depth + gain < alpha) {
+        if (depth < 8 && !in_qsearch && !in_check && !(move == tt_move) && static_eval + 95 * depth + gain < alpha) {
             best_score = alpha;
             break;
         }
