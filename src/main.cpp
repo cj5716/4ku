@@ -554,7 +554,7 @@ i32 alphabeta(Position &pos,
         depth--;
 
     const i32 static_eval = eval(pos);
-    stack[ply].score = static_eval;
+    stack[ply].score = tt_entry.key == tt_key && alpha == beta - 1 ? tt_entry.score : static_eval;
     const i32 improving = ply > 1 && static_eval > stack[ply - 2].score;
 
     if (in_qsearch && static_eval > alpha) {
