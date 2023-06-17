@@ -556,9 +556,9 @@ i32 alphabeta(Position &pos,
 
     const i32 static_eval = eval(pos);
     stack[ply].score = in_check ? value_none : static_eval;
-    const i32 improving = stack[ply - 2].score != value_none ? ply > 1 && static_eval > stack[ply - 2].score
-                        : stack[ply - 4].score != value_none ? ply > 3 && static_eval > stack[ply - 4].score
-                                                             : true;
+    const i32 improving = !in_check ? stack[ply - 2].score != value_none ? ply > 1 && static_eval > stack[ply - 2].score
+                                    : stack[ply - 4].score != value_none ? ply > 3 && static_eval > stack[ply - 4].score
+                                                                         : true : false;
 
     if (in_qsearch && static_eval > alpha) {
         if (static_eval >= beta)
