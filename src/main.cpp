@@ -509,7 +509,7 @@ const i32 pawn_attacked[] = {S(-64, -14), S(-155, -142)};
 
 i32 alphabeta(Position &pos,
               i32 alpha,
-              const i32 beta,
+              i32 beta,
               i32 depth,
               const i32 ply,
               // minify enable filter delete
@@ -537,6 +537,10 @@ i32 alphabeta(Position &pos,
         for (const u64 old_hash : hash_history)
             if (old_hash == tt_key)
                 return 0;
+        alpha = max(alpha, -mate_score + ply);
+        beta = min(beta, mate_score - ply - 1);
+        if (alpha >= beta)
+            return alpha;
     }
 
     // TT Probing
