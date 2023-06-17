@@ -38,6 +38,7 @@ using u64 = uint64_t;
 // Constants
 const i32 mate_score = 1 << 15;
 const i32 inf = 1 << 16;
+const i32 value_none = -inf - 1;
 
 enum
 {
@@ -554,9 +555,10 @@ i32 alphabeta(Position &pos,
         depth--;
 
     const i32 static_eval = eval(pos);
-    stack[ply].score = static_eval;
-    const i32 improving = !in_check ? ply > 1 && static_eval > stack[ply - 2].score
-                                    : ply > 3 && static_eval > stack[ply - 4].score;
+    stack[ply].score = in_check ? value_none : static_eval;
+    const i32 improving = stack[ply - 2].score != value_none ? ply > 1 && static_eval > stack[ply - 2].score
+                        : stack[ply - 4].score != value_none ? ply > 3 && static_eval > stack[ply - 4].score
+                                                             : true;
 
     if (in_qsearch && static_eval > alpha) {
         if (static_eval >= beta)
