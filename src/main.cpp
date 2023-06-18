@@ -613,7 +613,7 @@ i32 alphabeta(Position &pos,
         // then we'll use that first and delay sorting one iteration.
         if (i == !(no_move == tt_move)) {
             for (i32 j = 0; j < num_moves; ++j) {
-                const i32 gain = max_material[moves[j].promo] + max_material[piece_on(pos, moves[j].to)];
+                const i32 gain = (moves[j].promo == Queen) * (max_material[moves[j].promo]) + max_material[piece_on(pos, moves[j].to)];
                 if (gain)
                     move_scores[j] = gain + (1LL << 54);
                 else if (moves[j] == stack[ply].killer)
@@ -641,7 +641,7 @@ i32 alphabeta(Position &pos,
         move_scores[best_move_index] = move_scores[i];
 
         // Material gain
-        const i32 gain = max_material[move.promo] + max_material[piece_on(pos, move.to)];
+        const i32 gain = (move.promo == Queen) * (max_material[move.promo]) + max_material[piece_on(pos, move.to)];
 
         // Delta pruning
         if (in_qsearch && !in_check && static_eval + 50 + gain < alpha) {
