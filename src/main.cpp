@@ -664,30 +664,10 @@ i32 alphabeta(Position &pos,
         // minify disable filter delete
 
         i32 score;
-        if (!num_moves_evaluated) {
-        full_window:
-            score = -alphabeta(npos,
-                               -beta,
-                               -alpha,
-                               depth - 1,
-                               ply + 1,
-                               // minify enable filter delete
-                               nodes,
-                               // minify disable filter delete
-                               stop_time,
-                               stop,
-                               stack,
-                               hh_table,
-                               hash_history);
-        } else {
-            // Late move reduction
-            i32 reduction = depth > 2 && num_moves_evaluated > 4 && !gain
-                                ? 1 + num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) - improving +
-                                      (hh_table[pos.flipped][move.from][move.to] < 0) -
-                                      (hh_table[pos.flipped][move.from][move.to] > 0)
-                                : 0;
-
-        zero_window:
+        i32 reduction = (alpha == beta - 1) + !improving - hh_table[pos.flipped][move.from][move.to] / 8192;
+        
+        if (depth > 2 && num_moves_evaluated > 4 && !gain) {
+            reduction = max(-1, min(reduction, depth - 2));
             score = -alphabeta(npos,
                                -alpha - 1,
                                -alpha,
@@ -702,14 +682,39 @@ i32 alphabeta(Position &pos,
                                hh_table,
                                hash_history);
 
-            if (reduction > 0 && score > alpha) {
-                reduction = 0;
-                goto zero_window;
+            if (alpha < score && score < beta && reduction > 0) {
+            zero_window:
+                -alphabeta(npos,
+                           -alpha - 1,
+                           -alpha,
+                           depth - 1,
+                           ply + 1,
+                           // minify enable filter delete
+                           nodes,
+                           // minify disable filter delete
+                           stop_time,
+                           stop,
+                           stack,
+                           hh_table,
+                           hash_history);
             }
-
-            if (score > alpha && score < beta)
-                goto full_window;
-        }
+        } else if (!in_qsearch && (alpha == beta - 1 || num_moves_evaluated))
+            goto zero_window;
+        
+        if (in_qsearch || (beta - alpha > 1 && (!num_moves_evaluated || (alpha < score && score < beta))))
+            score = -alphabeta(npos,
+                               -beta,
+                               -alpha,
+                               depth - 1,
+                               ply + 1,
+                               // minify enable filter delete
+                               nodes,
+                               // minify disable filter delete
+                               stop_time,
+                               stop,
+                               stack,
+                               hh_table,
+                               hash_history);
 
         // Exit early if out of time
         if (depth > 4 && (stop || now() >= stop_time)) {
