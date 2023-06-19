@@ -682,7 +682,7 @@ i32 alphabeta(Position &pos,
                                hh_table,
                                hash_history);
 
-            if (alpha < score && score < beta && reduction > 0) {
+            if (score > alpha && reduction > 0) {
             zero_window:
                 -alphabeta(npos,
                            -alpha - 1,
