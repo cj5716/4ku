@@ -668,7 +668,7 @@ i32 alphabeta(Position &pos,
                                       max(-1L, min(hh_table[pos.flipped][move.from][move.to], 1L));
         
         if (depth > 2 && num_moves_evaluated > 4 && !gain) {
-            reduction = max(-1, min(reduction, depth - 2));
+            reduction = max(0, min(reduction, depth - 2));
             score = -alphabeta(npos,
                                -alpha - 1,
                                -alpha,
@@ -712,7 +712,7 @@ i32 alphabeta(Position &pos,
                                hh_table,
                                hash_history);
         
-        if (beta - alpha > 1 && (!num_moves_evaluated || (alpha < score && score < beta)))
+        if (!num_moves_evaluated || (alpha < score && score < beta))
             score = -alphabeta(npos,
                                -beta,
                                -alpha,
