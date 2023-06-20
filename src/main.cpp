@@ -683,8 +683,7 @@ i32 alphabeta(Position &pos,
                                hh_table,
                                hash_history);
 
-            if (score > alpha && reduction > 0) {
-            zero_window:
+            if (score > alpha && reduction > 0)
                 score = -alphabeta(npos,
                                    -alpha - 1,
                                    -alpha,
@@ -698,9 +697,20 @@ i32 alphabeta(Position &pos,
                                    stack,
                                    hh_table,
                                    hash_history);
-            }
         } else if (!in_qsearch && (alpha == beta - 1 || num_moves_evaluated))
-            goto zero_window;
+            score = -alphabeta(npos,
+                               -alpha - 1,
+                               -alpha,
+                               depth - 1,
+                               ply + 1,
+                               // minify enable filter delete
+                               nodes,
+                               // minify disable filter delete
+                               stop_time,
+                               stop,
+                               stack,
+                               hh_table,
+                               hash_history);
         
         if (beta - alpha > 1 && (!num_moves_evaluated || (alpha < score && score < beta)))
             score = -alphabeta(npos,
