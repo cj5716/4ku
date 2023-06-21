@@ -681,31 +681,29 @@ i32 alphabeta(Position &pos,
                                hash_history);
         } else {
             // Late move reduction
-            i32 reduction = 1 + num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) - improving +
+            i32 reduction = depth > 2 && num_moves_evaluated > 4 && !gain
+                                ? 1 + num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) - improving +
                                       (hh_table[pos.flipped][move.from][move.to] < 0) -
-                                      (hh_table[pos.flipped][move.from][move.to] > 0);
-                                      
-            if (depth > 2 && num_moves_evaluated > 4 && !gain) {
-            zero_window:
-                score = -alphabeta(npos,
-                                   -alpha - 1,
-                                   -alpha,
-                                   depth - reduction - 1,
-                                   ply + 1,
-                                   // minify enable filter delete
-                                   nodes,
-                                   // minify disable filter delete
-                                   stop_time,
-                                   stop,
-                                   stack,
-                                   hh_table,
-                                   hash_history);
+                                      (hh_table[pos.flipped][move.from][move.to] > 0)
+                                : 0;
+            reduction = max(0, min(reduction, depth - 2));
 
-                if (reduction > 0 && score > alpha) {
-                    reduction = 0;
-                    goto zero_window;
-                }
-            } else if (!in_qsearch && (alpha == beta - 1 || num_moves_evaluated)) {
+        zero_window:
+            score = -alphabeta(npos,
+                               -alpha - 1,
+                               -alpha,
+                               depth - reduction - 1,
+                               ply + 1,
+                               // minify enable filter delete
+                               nodes,
+                               // minify disable filter delete
+                               stop_time,
+                               stop,
+                               stack,
+                               hh_table,
+                               hash_history);
+
+            if (reduction > 0 && score > alpha) {
                 reduction = 0;
                 goto zero_window;
             }
