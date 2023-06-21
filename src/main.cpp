@@ -1126,7 +1126,7 @@ i32 main(
             // minify disable filter delete
 
             const u64 start = now();
-            const u64 allocated_time = 0.6 * (pos.flipped ? ((btime - 50) / 20 + binc * 0.75) : ((wtime - 50) / 20 + winc * 0.75));
+            const u64 allocated_time = pos.flipped ? btime / 4 + binc / 2 : wtime / 4 + winc / 2;
 
             // Lazy SMP
             vector<thread> threads;
