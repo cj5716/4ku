@@ -1112,6 +1112,7 @@ i32 main(
                     found++;
                 } else if (word == "binc") {
                     cin >> binc;
+                    found++;
                 }
             }
 
