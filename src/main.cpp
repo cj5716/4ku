@@ -567,7 +567,7 @@ i32 alphabeta(Position &pos,
         if (!in_check && alpha == beta - 1) {
             // Reverse futility pruning
             if (depth < 7) {
-                if (static_eval - 64 * depth + 70 * improving >= beta)
+                if (static_eval - 75 * (depth - improving) >= beta)
                     return beta;
             }
 
