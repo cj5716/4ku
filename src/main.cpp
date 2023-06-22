@@ -551,7 +551,7 @@ i32 alphabeta(Position &pos,
     }
     // Internal iterative reduction
     if (depth > 3 && tt_move == no_move)
-        depth--;
+        depth -= 1 + (beta - alpha > 1);
 
     const i32 static_eval = eval(pos);
     stack[ply].score = static_eval;
