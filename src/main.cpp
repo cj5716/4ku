@@ -544,13 +544,13 @@ i32 alphabeta(Position &pos,
     Move tt_move{};
     if (tt_entry.key == tt_key) {
         tt_move = tt_entry.move;
-        if (ply > 0 && (alpha == beta - 1) && tt_entry.depth >= depth)
+        if ((alpha == beta - 1) && tt_entry.depth >= depth)
             if (tt_entry.flag == Upper && tt_entry.score <= alpha || tt_entry.flag == Lower && tt_entry.score >= beta ||
                 tt_entry.flag == Exact)
                 return tt_entry.score;
     }
     // Internal iterative reduction
-    if (depth > 3 && tt_move == no_move)
+    else if (depth > 3)
         depth--;
 
     const i32 static_eval = eval(pos);
