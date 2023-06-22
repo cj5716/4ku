@@ -681,9 +681,9 @@ i32 alphabeta(Position &pos,
                                hash_history);
         } else {
             // Late move reduction
-            i32 reduction = depth > 2 && num_moves_evaluated > 4 && !in_check
+            i32 reduction = depth > 2 && num_moves_evaluated > 4 && !gain
                                 ? num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) + !improving -
-                                  min(max(hh_table[pos.flipped][move.from][move.to], -1L), 1L)
+                                  min(max(hh_table[pos.flipped][move.from][move.to], -1L), 1L) - in_check
                                 : 0;
             reduction = min(max(reduction, 0), depth - 2);
 
