@@ -83,7 +83,7 @@ struct [[nodiscard]] Stack {
     int64_t move_scores[256];
     Move move;
     Move killer;
-    i32 score;
+    i32 static_eval;
 };
 
 enum
@@ -379,7 +379,7 @@ const i32 bishop_pair = S(34, 64);
 const i32 king_shield[] = {S(42, -10), S(31, -8)};
 const i32 pawn_attacked[] = {S(-64, -14), S(-155, -142)};
 
-[[nodiscard]] i32 eval(Position &pos) {
+[[nodiscard]] i32 evaluate(Position &pos) {
     // Include side to move bonus
     i32 score = S(28, 10);
     i32 phase = 0;
@@ -523,7 +523,7 @@ i32 alphabeta(Position &pos,
               const i32 do_null = true) {
     // Don't overflow the stack
     if (ply > 127)
-        return eval(pos);
+        return evaluate(pos);
 
     // Check extensions
     const i32 in_check = is_attacked(pos, lsb(pos.colour[0] & pos.pieces[King]));
@@ -538,6 +538,9 @@ i32 alphabeta(Position &pos,
             if (old_hash == tt_key)
                 return 0;
     }
+    
+    i32 eval = evaluate(pos);
+    stack[ply].static_eval = eval;
 
     // TT Probing
     TT_Entry &tt_entry = transposition_table[tt_key % num_tt_entries];
@@ -548,19 +551,19 @@ i32 alphabeta(Position &pos,
             if (tt_entry.flag == Upper && tt_entry.score <= alpha || tt_entry.flag == Lower && tt_entry.score >= beta ||
                 tt_entry.flag == Exact)
                 return tt_entry.score;
+        eval = tt_entry.score;
     }
     // Internal iterative reduction
     else if (depth > 3)
         depth--;
 
-    const i32 static_eval = eval(pos);
-    stack[ply].score = static_eval;
-    const i32 improving = ply > 1 && static_eval > stack[ply - 2].score;
+    
+    const i32 improving = ply > 1 && stack[ply].static_eval > stack[ply - 2].static_eval;
 
-    if (in_qsearch && static_eval > alpha) {
-        if (static_eval >= beta)
+    if (in_qsearch && eval > alpha) {
+        if (eval >= beta)
             return beta;
-        alpha = static_eval;
+        alpha = eval;
     }
 
     if (ply > 0 && !in_qsearch) {
@@ -568,19 +571,19 @@ i32 alphabeta(Position &pos,
             // Reverse futility pruning
             if (depth < 7) {
                 const i32 margins[] = {0, 50, 100, 200, 300, 500, 800};
-                if (static_eval - margins[depth - improving] >= beta)
+                if (eval - margins[depth - improving] >= beta)
                     return beta;
             }
 
             // Null move pruning
-            if (depth > 2 && static_eval >= beta && do_null && pos.colour[0] & ~(pos.pieces[Pawn] | pos.pieces[King])) {
+            if (depth > 2 && eval >= beta && do_null && pos.colour[0] & ~(pos.pieces[Pawn] | pos.pieces[King])) {
                 Position npos = pos;
                 flip(npos);
                 npos.ep = 0;
                 if (-alphabeta(npos,
                                -beta,
                                -beta + 1,
-                               depth - 4 - depth / 6 - min((static_eval - beta) / 200, 3),
+                               depth - 4 - depth / 6 - min((eval - beta) / 200, 3),
                                ply + 1,
                                // minify enable filter delete
                                nodes,
@@ -644,13 +647,13 @@ i32 alphabeta(Position &pos,
         const i32 gain = max_material[move.promo] + max_material[piece_on(pos, move.to)];
 
         // Delta pruning
-        if (in_qsearch && !in_check && static_eval + 50 + gain < alpha) {
+        if (in_qsearch && !in_check && eval + 50 + gain < alpha) {
             best_score = alpha;
             break;
         }
 
         // Forward futility pruning
-        if (depth < 8 && !in_qsearch && !in_check && !(move == tt_move) && static_eval + 100 * depth + gain < alpha) {
+        if (depth < 8 && !in_qsearch && !in_check && !(move == tt_move) && stack[ply].static_eval + 100 * depth + gain < alpha) {
             best_score = alpha;
             break;
         }
