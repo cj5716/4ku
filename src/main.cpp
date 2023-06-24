@@ -654,7 +654,7 @@ i32 alphabeta(Position &pos,
         }
 
         // Forward futility pruning
-        if (depth < 8 && !in_qsearch && !in_check && !(move == tt_move) && stack[ply].static_eval + 100 * depth + gain < alpha) {
+        if (depth < 8 && !in_qsearch && !in_check && !(move == tt_move) && eval + 100 * depth + gain < alpha) {
             best_score = alpha;
             break;
         }
