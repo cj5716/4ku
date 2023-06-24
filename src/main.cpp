@@ -538,9 +538,6 @@ i32 alphabeta(Position &pos,
             if (old_hash == tt_key)
                 return 0;
     }
-    
-    i32 eval = evaluate(pos);
-    stack[ply].static_eval = eval;
 
     // TT Probing
     TT_Entry &tt_entry = transposition_table[tt_key % num_tt_entries];
@@ -551,12 +548,13 @@ i32 alphabeta(Position &pos,
             if (tt_entry.flag == Upper && tt_entry.score <= alpha || tt_entry.flag == Lower && tt_entry.score >= beta ||
                 tt_entry.flag == Exact)
                 return tt_entry.score;
-        if (tt_entry.flag & tt_entry.score > eval)
-            eval = tt_entry.score;
     }
     // Internal iterative reduction
     else if (depth > 3)
         depth--;
+    
+    stack[ply].static_eval = evaluate(pos);
+    const i32 eval = tt_entry.key == tt_key && tt_entry.flag & tt_entry.score > stack[ply].static_eval ? tt_entry.score : stack[ply].static_eval;
 
     
     const i32 improving = ply > 1 && stack[ply].static_eval > stack[ply - 2].static_eval;
