@@ -551,7 +551,7 @@ i32 alphabeta(Position &pos,
             if (tt_entry.flag == Upper && tt_entry.score <= alpha || tt_entry.flag == Lower && tt_entry.score >= beta ||
                 tt_entry.flag == Exact)
                 return tt_entry.score;
-        if (tt_entry.flag & (tt_entry.score > eval))
+        if (tt_entry.flag & tt_entry.score > eval)
             eval = tt_entry.score;
     }
     // Internal iterative reduction
