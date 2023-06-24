@@ -551,7 +551,7 @@ i32 alphabeta(Position &pos,
             if (tt_entry.flag == Upper && tt_entry.score <= alpha || tt_entry.flag == Lower && tt_entry.score >= beta ||
                 tt_entry.flag == Exact)
                 return tt_entry.score;
-        if (in_qsearch || alpha == beta - 1)
+        if (tt_entry.flag & (tt_entry.score > eval ? Lower : Upper))
             eval = tt_entry.score;
     }
     // Internal iterative reduction
@@ -654,7 +654,7 @@ i32 alphabeta(Position &pos,
         }
 
         // Forward futility pruning
-        if (depth < 8 && !in_qsearch && !in_check && !(move == tt_move) && eval + 100 * depth + gain < alpha) {
+        if (depth < 8 && !in_qsearch && !in_check && !(move == tt_move) && stack[ply].static_eval + 100 * depth + gain < alpha) {
             best_score = alpha;
             break;
         }
