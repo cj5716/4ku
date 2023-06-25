@@ -546,8 +546,11 @@ i32 alphabeta(Position &pos,
         tt_move = tt_entry.move;
         if (ply > 0 && tt_entry.depth >= depth)
             if (tt_entry.flag == Upper && tt_entry.score <= alpha || tt_entry.flag == Lower && tt_entry.score >= beta ||
-                tt_entry.flag == Exact)
+                tt_entry.flag == Exact) {
+                if (!max_material[tt_move.promo] && !max_material[piece_on(pos, tt_move.to)])
+                    hh_table[pos.flipped][tt_move.from][tt_move.to] += depth * depth;
                 return tt_entry.score;
+            }
     }
     // Internal iterative reduction
     else if (depth > 3)
