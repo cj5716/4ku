@@ -823,7 +823,7 @@ Move iteratively_deepen(Position &pos,
 
     i32 score = 0;
     for (i32 i = 1; i < 128; ++i) {
-        i32 window = 24 + (score * score >> 14);
+        i32 window = 32 + (score * score >> 14);
         i32 alpha = score - window;
         i32 beta = score + window;
         i32 research = 0;
@@ -850,7 +850,7 @@ Move iteratively_deepen(Position &pos,
         // The main search thread prints with every iteration normally, or when the target depth has finished when
         // benchmarking
         if (thread_id == 0 &&
-            (bench_depth == 0 || i == bench_depth)) {
+            (bench_depth == 0 || i == bench_depth && score < beta && score > alpha)) {
             const u64 elapsed = now() - start_time;
             cout << "info";
             cout << " depth " << i;
@@ -879,13 +879,13 @@ Move iteratively_deepen(Position &pos,
         // minify disable filter delete
 
         if (score <= alpha) {
+            window += window / ++research;
             beta = (alpha + beta) / 2;
             alpha = score - window;
-            window <<= !!++research;
             goto research;
         } else if (score >= beta) {
+            window += window / ++research;
             beta = score + window;
-            window <<= !!++research;
             goto research;
         }
 
