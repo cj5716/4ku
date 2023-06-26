@@ -580,7 +580,7 @@ i32 alphabeta(Position &pos,
                 if (-alphabeta(npos,
                                -beta,
                                -beta + 1,
-                               depth - 3 - depth / 4 - min((static_eval - beta) / 200, 4),
+                               depth - 4 - depth / 8 - min((static_eval - beta) / 200, 4),
                                ply + 1,
                                // minify enable filter delete
                                nodes,
