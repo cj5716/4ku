@@ -879,7 +879,7 @@ Move iteratively_deepen(Position &pos,
         // minify disable filter delete
 
         if (newscore >= score + window || newscore <= score - window) {
-            window <<= ++research;
+            window += window / ++research;
             score = newscore;
             goto research;
         }
