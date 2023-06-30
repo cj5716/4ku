@@ -822,6 +822,7 @@ Move iteratively_deepen(Position &pos,
     // minify disable filter delete
 
     i32 score = 0;
+	Move best_move = no_move;
     for (i32 i = 1; i < 128; ++i) {
         i32 window = 32 + (score * score >> 14);
         i32 research = 0;
@@ -875,20 +876,22 @@ Move iteratively_deepen(Position &pos,
             break;
         }
         // minify disable filter delete
+		
+		if (newscore > score - window)
+			best_move = stack[0].move;
 
         if (newscore >= score + window || newscore <= score - window) {
             window <<= ++research;
             score = newscore;
             goto research;
         }
-
         score = newscore;
 
         // Early exit after completed ply
         if (!research && now() >= start_time + allocated_time / 10)
             break;
     }
-    return stack[0].move;
+    return best_move == no_move ? stack[0].move : best_move;
 }
 
 // minify enable filter delete
