@@ -524,12 +524,13 @@ i32 alphabeta(Position &pos,
     // Don't overflow the stack
     if (ply > 127)
         return eval(pos);
+	
+	const i32 in_qsearch = depth <= 0;
 
     // Check extensions
     const i32 in_check = is_attacked(pos, lsb(pos.colour[0] & pos.pieces[King]));
-    depth += in_check && ply > 0;
+    depth += in_check && !in_qsearch;
 
-    const i32 in_qsearch = depth <= 0;
     const u64 tt_key = get_hash(pos);
 
     if (ply > 0 && !in_qsearch) {
