@@ -813,7 +813,8 @@ Move iteratively_deepen(Position &pos,
                         u64 &total_nodes,
                         // minify disable filter delete
                         const u64 start_time,
-                        const i32 allocated_time,
+                        const i32 max_time,
+                        const i32 opt_time,
                         i32 &stop) {
     Stack stack[128] = {};
     int64_t hh_table[2][64][64] = {};
@@ -834,14 +835,14 @@ Move iteratively_deepen(Position &pos,
                                        // minify enable filter delete
                                        nodes,
                                        // minify disable filter delete
-                                       start_time + allocated_time,
+                                       start_time + max_time,
                                        stop,
                                        stack,
                                        hh_table,
                                        hash_history);
 
         // Hard time limit exceeded
-        if (now() >= start_time + allocated_time || stop)
+        if (now() >= start_time + max_time || stop)
             break;
 
         // minify enable filter delete
@@ -885,7 +886,7 @@ Move iteratively_deepen(Position &pos,
         score = newscore;
 
         // Early exit after completed ply
-        if (!research && now() >= start_time + allocated_time / 10)
+        if (!research && now() >= start_time + opt_time)
             break;
     }
     return stack[0].move;
@@ -1031,7 +1032,7 @@ i32 main(
         for (const auto &[fen, depth] : bench_positions) {
             i32 stop = false;
             set_fen(pos, fen);
-            iteratively_deepen(pos, hash_history, 0, depth, total_nodes, now(), 1 << 30, stop);
+            iteratively_deepen(pos, hash_history, 0, depth, total_nodes, now(), 1 << 30, 1 << 30, stop);
         }
         const u64 elapsed = now() - start_time;
 
@@ -1118,7 +1119,10 @@ i32 main(
             // minify disable filter delete
 
             const u64 start = now();
-            const u64 allocated_time = (pos.flipped ? btime : wtime) / 3;
+			const u64 given_time = (pos.flipped ? btime : wtime) - 50;
+			const u64 opt_time = given_time / 20;
+			const u64 max_time = given_time / 3;
+            
 
             // Lazy SMP
             vector<thread> threads;
@@ -1134,6 +1138,7 @@ i32 main(
                                        // minify disable filter delete
                                        start,
                                        1 << 30,
+                                       1 << 30,
                                        stop);
                 });
             const Move best_move = iteratively_deepen(pos,
@@ -1144,7 +1149,8 @@ i32 main(
                                                       total_nodes,
                                                       // minify disable filter delete
                                                       start,
-                                                      allocated_time,
+                                                      max_time,
+													  opt_time,
                                                       stop);
             stop = true;
             for (i32 i = 1; i < thread_count; ++i)
