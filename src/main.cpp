@@ -550,8 +550,8 @@ i32 alphabeta(Position &pos,
                 return tt_entry.score;
     }
     // Internal iterative reduction
-    else if (depth > 3)
-        depth--;
+    if (tt_move == no_move && depth > 3)
+        depth -= 1 + (tt_entry.key == tt_key && tt_entry.depth >= depth);
 
     const i32 static_eval = eval(pos);
     stack[ply].score = static_eval;
