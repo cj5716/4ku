@@ -885,7 +885,7 @@ Move iteratively_deepen(Position &pos,
         score = newscore;
 
         // Early exit after completed ply
-        if (!research && now() >= start_time + allocated_time / 10)
+        if (!research && now() >= start_time + allocated_time / 7)
             break;
     }
     return stack[0].move;
