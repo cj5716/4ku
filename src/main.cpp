@@ -885,7 +885,7 @@ Move iteratively_deepen(Position &pos,
         score = newscore;
 
         // Early exit after completed ply
-        if (!research && now() >= start_time + allocated_time / 6)
+        if (!research && now() >= start_time + allocated_time / 7)
             break;
     }
     return stack[0].move;
@@ -1118,7 +1118,7 @@ i32 main(
             // minify disable filter delete
 
             const u64 start = now();
-            const u64 allocated_time = (pos.flipped ? btime : wtime) / 5;
+            const u64 allocated_time = (pos.flipped ? btime : wtime) / 4;
 
             // Lazy SMP
             vector<thread> threads;
