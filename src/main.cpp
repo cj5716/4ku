@@ -88,9 +88,10 @@ struct [[nodiscard]] Stack {
 
 enum
 {
-    Upper,
-    Lower,
-    Exact
+    Bound_none,
+    Bound_upper,
+    Bound_lower,
+    Bound_exact
 };
 
 struct [[nodiscard]] TT_Entry {
@@ -544,9 +545,8 @@ i32 alphabeta(Position &pos,
     Move tt_move{};
     if (tt_entry.key == tt_key) {
         tt_move = tt_entry.move;
-        if (ply > 0 && tt_entry.depth >= depth)
-            if (tt_entry.flag == Upper && tt_entry.score <= alpha || tt_entry.flag == Lower && tt_entry.score >= beta ||
-                tt_entry.flag == Exact)
+        if (ply > 0 && tt_entry.depth >= depth && alpha == beta - 1)
+            if (tt_entry.flag & (tt_entry.score >= beta ? Bound_lower : Bound_upper))
                 return tt_entry.score;
     }
     // Internal iterative reduction
@@ -597,7 +597,7 @@ i32 alphabeta(Position &pos,
     }
 
     hash_history.emplace_back(tt_key);
-    uint16_t tt_flag = Upper;
+    uint16_t tt_flag = Bound_upper;
 
     i32 num_moves_evaluated = 0;
     i32 num_quiets_evaluated = 0;
@@ -727,14 +727,14 @@ i32 alphabeta(Position &pos,
             best_score = score;
             best_move = move;
             if (score > alpha) {
-                tt_flag = Exact;
+                tt_flag = Bound_exact;
                 alpha = score;
                 stack[ply].move = move;
             }
         }
 
         if (alpha >= beta) {
-            tt_flag = Lower;
+            tt_flag = Bound_lower;
             if (!gain) {
                 hh_table[pos.flipped][move.from][move.to] += depth * depth;
                 for (i32 j = 0; j < num_quiets_evaluated - 1; ++j)
@@ -791,7 +791,7 @@ void print_pv(const Position &pos, const Move move, vector<u64> &hash_history) {
     const TT_Entry &tt_entry = transposition_table[tt_key % num_tt_entries];
 
     // Only continue if the move was valid and comes from a PV search
-    if (tt_entry.key != tt_key || tt_entry.move == no_move || tt_entry.flag != 2)
+    if (tt_entry.key != tt_key || tt_entry.move == no_move || tt_entry.flag != Bound_exact)
         return;
 
     // Avoid infinite recursion on a repetition
