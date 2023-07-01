@@ -664,7 +664,7 @@ i32 alphabeta(Position &pos,
         // minify disable filter delete
 
         i32 score;
-        if (!num_moves_evaluated) {
+        if (in_qsearch || !num_moves_evaluated) {
         full_window:
             score = -alphabeta(npos,
                                -beta,
