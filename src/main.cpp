@@ -658,7 +658,8 @@ i32 alphabeta(Position &pos,
         Position npos = pos;
         if (!makemove(npos, move))
             continue;
-
+        
+        const i32 gives_check = is_attacked(pos, lsb(pos.colour[0] & pos.pieces[King]));
         // minify enable filter delete
         nodes++;
         // minify disable filter delete
@@ -684,7 +685,7 @@ i32 alphabeta(Position &pos,
             i32 reduction = depth > 2 && num_moves_evaluated > 4 && !gain
                                 ? 1 + num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) - improving +
                                       (hh_table[pos.flipped][move.from][move.to] < 0) -
-                                      (hh_table[pos.flipped][move.from][move.to] > 0)
+                                      (hh_table[pos.flipped][move.from][move.to] > 0) - gives_check
                                 : 0;
 
         zero_window:
