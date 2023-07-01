@@ -545,7 +545,7 @@ i32 alphabeta(Position &pos,
     Move tt_move{};
     if (tt_entry.key == tt_key) {
         tt_move = tt_entry.move;
-        if (ply > 0 && tt_entry.depth >= depth && alpha == beta - 1)
+        if (ply > 0 && tt_entry.depth >= depth)
             if (tt_entry.flag & (tt_entry.score >= beta ? Bound_lower : Bound_upper))
                 return tt_entry.score;
     }
