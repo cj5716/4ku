@@ -739,7 +739,7 @@ i32 alphabeta(Position &pos,
                 hh_table[pos.flipped][move.from][move.to] += depth * depth;
                 for (i32 j = 0; j < num_quiets_evaluated - 1; ++j)
                     hh_table[pos.flipped][stack[ply].quiets_evaluated[j].from][stack[ply].quiets_evaluated[j].to] -=
-                        depth * depth;
+                        depth * depth + j * depth;
                 stack[ply].killer = move;
             }
             break;
