@@ -686,7 +686,7 @@ i32 alphabeta(Position &pos,
                                       (hh_table[pos.flipped][move.from][move.to] < 0) -
                                       (hh_table[pos.flipped][move.from][move.to] > 0)
                                 : 0;
-            reduction = min(reduction, depth - 2);
+            reduction = min(reduction, depth - 1);
 
         zero_window:
             score = -alphabeta(npos,
