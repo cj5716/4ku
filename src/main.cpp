@@ -567,7 +567,7 @@ i32 alphabeta(Position &pos,
         if (!in_check && alpha == beta - 1) {
             // Reverse futility pruning
             if (depth < 7) {
-                const i32 margins[] = {0, 32, 96, 192, 256, 448, 704};
+                const i32 margins[] = {0, 40, 90, 190, 290, 490, 790};
                 if (static_eval - margins[depth - improving] >= beta)
                     return beta;
             }
