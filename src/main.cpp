@@ -680,6 +680,7 @@ i32 alphabeta(Position &pos,
                                 ? 1 + num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) - improving -
                                       min(max(hist, -1), 1) - hist / 8192
                                 : 0;
+            reduction = max(reduction, -1);
 
         zero_window:
             score = -alphabeta(npos,
