@@ -675,10 +675,10 @@ i32 alphabeta(Position &pos,
                                hash_history);
         } else {
             // Late move reduction
+            i32 hist = hh_table[pos.flipped][move.from][move.to];
             i32 reduction = depth > 2 && num_moves_evaluated > 4 && !gain
-                                ? 1 + num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) - improving +
-                                      (hh_table[pos.flipped][move.from][move.to] < 0) -
-                                      (hh_table[pos.flipped][move.from][move.to] > 0)
+                                ? 1 + num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) - improving -
+                                      min(max(hist, -1), 1) - hist / 8192
                                 : 0;
 
         zero_window:
