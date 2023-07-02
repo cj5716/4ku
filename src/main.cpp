@@ -97,8 +97,8 @@ struct [[nodiscard]] TT_Entry {
     u64 key;
     Move move;
     i32 score;
-    i32 depth;
-    uint16_t flag;
+    uint8_t depth;
+    uint8_t flag;
 };
 
 u64 keys[848];
@@ -530,6 +530,8 @@ i32 alphabeta(Position &pos,
     depth += in_check;
 
     const i32 in_qsearch = depth <= 0;
+    if (in_qsearch)
+        depth = 0;
     const u64 tt_key = get_hash(pos);
 
     if (ply > 0 && !in_qsearch) {
@@ -597,7 +599,7 @@ i32 alphabeta(Position &pos,
     }
 
     hash_history.emplace_back(tt_key);
-    uint16_t tt_flag = Upper;
+    uint8_t tt_flag = Upper;
 
     i32 num_moves_evaluated = 0;
     i32 num_quiets_evaluated = 0;
@@ -756,7 +758,7 @@ i32 alphabeta(Position &pos,
         return in_qsearch ? alpha : in_check ? ply - mate_score : 0;
 
     // Save to TT
-    tt_entry = {tt_key, best_move == no_move ? tt_move : best_move, best_score, in_qsearch ? 0 : depth, tt_flag};
+    tt_entry = {tt_key, best_move == no_move ? tt_move : best_move, best_score, uint8_t(in_qsearch ? 0 : depth), tt_flag};
 
     return alpha;
 }
