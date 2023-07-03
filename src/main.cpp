@@ -755,7 +755,7 @@ i32 alphabeta(Position &pos,
     if (best_score == -inf)
         return in_qsearch ? alpha : in_check ? ply - mate_score : 0;
 
-    if ((depth > tt_entry.depth - (!(tt_entry.flag == Exact) && tt_flag == Exact) + (tt_entry.flag == Exact && !(tt_flag == Exact))) || tt_move == no_move && !(best_move == no_move))
+    if ((depth > tt_entry.depth - (!(tt_entry.flag == Exact) && tt_flag == Exact)) || tt_move == no_move && !(best_move == no_move))
         // Save to TT
         tt_entry = {tt_key, best_move == no_move ? tt_move : best_move, best_score, in_qsearch ? 0 : depth, tt_flag};
 
