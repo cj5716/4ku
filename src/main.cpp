@@ -677,10 +677,10 @@ i32 alphabeta(Position &pos,
             // Late move reduction
             i32 hist = hh_table[pos.flipped][move.from][move.to];
             i32 reduction = depth > 2 && num_moves_evaluated > 4 && !gain
-                                ? 1 + num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) - improving -
-                                      min(max(hist, -1), 1) - (hist >= 4096)
+                                ? num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) + !improving -
+                                  min(max(hist, -1), 1) + (hist <= -4096)
                                 : 0;
-            reduction = max(reduction, -1);
+            //reduction = max(reduction, -1);
 
         zero_window:
             score = -alphabeta(npos,
