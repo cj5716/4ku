@@ -678,7 +678,7 @@ i32 alphabeta(Position &pos,
             i32 hist = hh_table[pos.flipped][move.from][move.to];
             i32 reduction = depth > 2 && num_moves_evaluated > 4 && !gain
                                 ? num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) + !improving -
-                                  min(max(hist, -1), 1) + (hist <= -3072)
+                                  min(max(hist, -1), 1) + (hist <= -2048)
                                 : 0;
             //reduction = max(reduction, -1);
 
