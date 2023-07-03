@@ -817,7 +817,9 @@ Move iteratively_deepen(Position &pos,
 
     i32 score = 0;
     for (i32 i = 1; i < 128; ++i) {
-        i32 window = 24 + (score * score >> 12);
+        if (i <= 3)
+            score = 0;
+        i32 window = i <= 3 ? inf : 24 + (score * score >> 13);
         i32 research = 0;
     research:
         const i32 newscore = alphabeta(pos,
