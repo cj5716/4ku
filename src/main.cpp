@@ -106,6 +106,7 @@ u64 keys[848];
 // Engine options
 u64 num_tt_entries = 64ULL << 15;  // The first value is the size in megabytes
 i32 thread_count = 1;
+i32 lmr_table[64][64];
 
 vector<TT_Entry> transposition_table;
 
@@ -682,7 +683,7 @@ i32 alphabeta(Position &pos,
         } else {
             // Late move reduction
             i32 reduction = depth > 2 && num_moves_evaluated > 4 && !gain
-                                ? 1 + num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) - improving +
+                                ? 1 + lmr_table[min(depth, 63)][min(num_moves_evaluated, 63)] + (alpha == beta - 1) - improving +
                                       (hh_table[pos.flipped][move.from][move.to] < 0) -
                                       (hh_table[pos.flipped][move.from][move.to] > 0)
                                 : 0;
@@ -988,6 +989,10 @@ i32 main(
     // pieces from 1-12 multiplied by the square + ep squares + castling rights
     for (u64 &k : keys)
         k = r();
+
+    for (i32 i = 0; i < 64; ++i)
+        for (i32 j = 0; j < 64; ++j)
+            lmr_table[i][j] = log(i) * log(j) / 2.25f - 0.25f;
 
     Position pos;
     vector<u64> hash_history;
