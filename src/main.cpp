@@ -564,7 +564,7 @@ i32 alphabeta(Position &pos,
     }
 
     if (ply > 0 && !in_qsearch) {
-        if (!in_check && alpha == beta - 1) {
+        if (!in_check) {
             // Reverse futility pruning
             if (depth < 7) {
                 const i32 margins[] = {0, 50, 100, 200, 300, 500, 800};
@@ -573,7 +573,7 @@ i32 alphabeta(Position &pos,
             }
 
             // Null move pruning
-            if (depth > 2 && static_eval >= beta && do_null && pos.colour[0] & ~(pos.pieces[Pawn] | pos.pieces[King])) {
+            if (depth > 2 && alpha == beta - 1 && static_eval >= beta && do_null && pos.colour[0] & ~(pos.pieces[Pawn] | pos.pieces[King])) {
                 Position npos = pos;
                 flip(npos);
                 npos.ep = 0;
