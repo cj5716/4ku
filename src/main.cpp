@@ -507,6 +507,7 @@ const i32 pawn_attacked[] = {S(-64, -14), S(-155, -142)};
     return hash;
 }
 
+i32 averageScore;
 i32 alphabeta(Position &pos,
               i32 alpha,
               const i32 beta,
@@ -723,6 +724,9 @@ i32 alphabeta(Position &pos,
             num_quiets_evaluated++;
         }
 
+        if (!ply)
+            averageScore = averageScore != -inf ? (2 * best_score + averageScore) / 3 : best_score;
+
         if (score > best_score) {
             best_score = score;
             best_move = move;
@@ -821,9 +825,9 @@ Move iteratively_deepen(Position &pos,
     u64 nodes = 0;
     // minify disable filter delete
 
-    i32 score = 0;
     for (i32 i = 1; i < 128; ++i) {
-        i32 window = 32 + (score * score >> 14);
+        i32 score = averageScore != -inf ? averageScore : 0;
+        i32 window = 32 + (averageScore * averageScore >> 14);
         i32 research = 0;
     research:
         const i32 newscore = alphabeta(pos,
@@ -1030,6 +1034,7 @@ i32 main(
         const u64 start_time = now();
         for (const auto &[fen, depth] : bench_positions) {
             i32 stop = false;
+            averageScore = -inf;
             set_fen(pos, fen);
             iteratively_deepen(pos, hash_history, 0, depth, total_nodes, now(), 1 << 30, stop);
         }
@@ -1045,6 +1050,7 @@ i32 main(
     // minify disable filter delete
 
     string word;
+    averageScore = -inf;
 
     // Wait for "uci"
     cin >> word;
