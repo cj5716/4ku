@@ -655,15 +655,15 @@ i32 alphabeta(Position &pos,
             break;
         }
 
-        // Forward futility pruning
-        if (depth < 8 && !in_qsearch && !in_check && !(move == tt_move) && static_eval + 100 * depth + gain < alpha) {
-            best_score = alpha;
-            break;
-        }
-
         Position npos = pos;
         if (!makemove(npos, move))
             continue;
+
+        // Forward futility pruning
+        if (depth < 8 && !in_qsearch && !in_check && !is_attacked(pos, lsb(pos.colour[0] & pos.pieces[King])) && !(move == tt_move) && static_eval + 100 * depth + gain < alpha) {
+            best_score = alpha;
+            break;
+        }
 
         // minify enable filter delete
         nodes++;
