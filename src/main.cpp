@@ -530,7 +530,7 @@ i32 alphabeta(Position &pos,
     const i32 in_check = is_attacked(pos, lsb(pos.colour[0] & pos.pieces[King]));
     depth += in_check;
 
-    const i32 in_qsearch = depth <= 0;
+    i32 in_qsearch = depth <= 0;
     const u64 tt_key = get_hash(pos);
 
     if (ply > 0 && !in_qsearch) {
@@ -567,6 +567,11 @@ i32 alphabeta(Position &pos,
         if (static_eval >= beta)
             return beta;
         alpha = static_eval;
+    }
+
+    if (static_eval < alpha - 256 * depth - 64 && ply && !in_qsearch) {
+        in_qsearch = true;
+        depth = 0;
     }
 
     if (ply > 0 && !in_qsearch) {
