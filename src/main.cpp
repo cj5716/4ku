@@ -546,10 +546,16 @@ i32 alphabeta(Position &pos,
     if (tt_entry.key == tt_key) {
         tt_move = tt_entry.move;
         if (ply > 0 && tt_entry.depth >= depth)
-            if (tt_entry.flag == Exact)
+            if (tt_entry.flag == Exact) {
+                if (tt_entry.score >= beta)
+                    return beta;
+
+                if (tt_entry.score <= alpha)
+                    return alpha;
+
                 return tt_entry.score;
 
-            else if (tt_entry.flag == Upper && tt_entry.score <= alpha)
+            } else if (tt_entry.flag == Upper && tt_entry.score <= alpha)
                 return alpha;
 
             else if (tt_entry.flag == Lower && tt_entry.score >= beta)
