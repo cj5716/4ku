@@ -569,7 +569,7 @@ i32 alphabeta(Position &pos,
         alpha = static_eval;
     }
 
-    if (static_eval < alpha - 256 * (depth + 1) && ply && !in_qsearch) {
+    if (static_eval < alpha - 256 * depth * depth - 64 && ply && !in_qsearch) {
         in_qsearch = true;
         depth = 0;
     }
