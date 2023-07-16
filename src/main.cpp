@@ -556,6 +556,7 @@ i32 alphabeta(Position &pos,
 
     i32 static_eval = eval(pos);
     stack[ply].score = static_eval;
+    stack[ply + 1].killer = no_move;
     const i32 improving = ply > 1 && static_eval > stack[ply - 2].score;
 
     // If static_eval <= tt_entry.score, tt_entry.flag has to be lower or exact for the condition to be true.
