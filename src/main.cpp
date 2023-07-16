@@ -508,7 +508,8 @@ const i32 pawn_attacked[] = {S(-64, -14), S(-155, -142)};
     return hash;
 }
 
-i32 alphabeta(Position &pos,
+i32 alphabeta(const i32 pv_node,
+              Position &pos,
               i32 alpha,
               const i32 beta,
               i32 depth,
@@ -570,7 +571,7 @@ i32 alphabeta(Position &pos,
     }
 
     if (ply > 0 && !in_qsearch) {
-        if (!in_check && alpha == beta - 1) {
+        if (!in_check && !pv_node) {
             // Reverse futility pruning
             if (depth < 7) {
                 const i32 margins[] = {0, 50, 100, 200, 300, 500, 800};
@@ -583,7 +584,8 @@ i32 alphabeta(Position &pos,
                 Position npos = pos;
                 flip(npos);
                 npos.ep = 0;
-                if (-alphabeta(npos,
+                if (-alphabeta(false,
+                               npos,
                                -beta,
                                -beta + 1,
                                depth - 4 - depth / 6 - min((static_eval - beta) / 200, 3),
@@ -672,7 +674,8 @@ i32 alphabeta(Position &pos,
         i32 score;
         if (!num_moves_evaluated) {
         full_window:
-            score = -alphabeta(npos,
+            score = -alphabeta(pv_node,
+                               npos,
                                -beta,
                                -alpha,
                                depth - 1,
@@ -688,13 +691,14 @@ i32 alphabeta(Position &pos,
         } else {
             // Late move reduction
             i32 reduction = depth > 2 && num_moves_evaluated > 4 && !gain
-                                ? 1 + num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) - improving +
+                                ? 1 + num_moves_evaluated / 14 + depth / 17 + !pv_node - improving +
                                       (hh_table[pos.flipped][move.from][move.to] < 0) -
                                       (hh_table[pos.flipped][move.from][move.to] > 0)
                                 : 0;
 
         zero_window:
-            score = -alphabeta(npos,
+            score = -alphabeta(false,
+                               npos,
                                -alpha - 1,
                                -alpha,
                                depth - reduction - 1,
@@ -752,7 +756,7 @@ i32 alphabeta(Position &pos,
         }
 
         // Late move pruning based on quiet move count
-        if (!in_check && alpha == beta - 1 && num_quiets_evaluated > 3 + depth * depth >> !improving)
+        if (!in_check && !pv_node && num_quiets_evaluated > 3 + depth * depth >> !improving)
             break;
     }
     hash_history.pop_back();
@@ -832,7 +836,8 @@ Move iteratively_deepen(Position &pos,
         i32 window = 32 + (score * score >> 14);
         i32 research = 0;
     research:
-        const i32 newscore = alphabeta(pos,
+        const i32 newscore = alphabeta(true,
+                                       pos,
                                        score - window,
                                        score + window,
                                        i,
