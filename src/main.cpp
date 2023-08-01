@@ -548,7 +548,14 @@ i32 alphabeta(Position &pos,
             // If tt_entry.score >= beta, tt_entry.flag has to be lower or exact for the condition to be true.
             // Otherwise, tt_entry.flag has to be upper or exact.
             if (tt_entry.flag + 1 & (tt_entry.score >= beta) + 1)
+            {
+                if (!in_qsearch && tt_entry.score >= beta && tt_move.promo == None && piece_on(pos, tt_move.to) == None)
+                {
+                    hh_table[pos.flipped][tt_move.from][tt_move.to] += depth * depth;
+                    stack[ply].killer = tt_move;
+                }
                 return tt_entry.score;
+            }
     }
     // Internal iterative reduction
     else if (depth > 3)
