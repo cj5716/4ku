@@ -564,7 +564,7 @@ i32 alphabeta(Position &pos,
         static_eval = tt_entry.score;
 
     if (!in_qsearch)
-        stack[ply + 1].killer = no_move;
+        stack[ply + 2].killer = no_move;
 
     if (in_qsearch && static_eval > alpha) {
         if (static_eval >= beta)
