@@ -554,6 +554,9 @@ i32 alphabeta(Position &pos,
     else if (depth > 3)
         depth--;
 
+    if (depth >= 5 && tt_move == no_move && tt_entry.depth >= depth + 3)
+        depth--;
+
     i32 static_eval = eval(pos);
     stack[ply].score = static_eval;
     const i32 improving = ply > 1 && static_eval > stack[ply - 2].score;
