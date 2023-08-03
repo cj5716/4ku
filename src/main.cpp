@@ -583,21 +583,22 @@ i32 alphabeta(Position &pos,
                 Position npos = pos;
                 flip(npos);
                 npos.ep = 0;
-                if (-alphabeta(npos,
-                               -beta,
-                               -beta + 1,
-                               depth - 4 - depth / 6 - min((static_eval - beta) / 200, 3),
-                               ply + 1,
-                               // minify enable filter delete
-                               nodes,
-                               // minify disable filter delete
-                               stop_time,
-                               stop,
-                               stack,
-                               hh_table,
-                               hash_history,
-                               false) >= beta)
-                    return beta;
+                i32 nmp_score = -alphabeta(npos,
+                                           -beta,
+                                           -beta + 1,
+                                           depth - 4 - depth / 6 - min((static_eval - beta) / 200, 3),
+                                           ply + 1,
+                                           // minify enable filter delete
+                                           nodes,
+                                           // minify disable filter delete
+                                           stop_time,
+                                           stop,
+                                           stack,
+                                           hh_table,
+                                           hash_history,
+                                           false);
+                if (nmp_score >= beta)
+                    return nmp_score > mate_score ? beta : mate_score;
             }
         }
     }
@@ -713,7 +714,7 @@ i32 alphabeta(Position &pos,
                 goto zero_window;
             }
 
-            if (score > alpha && beta - alpha != 1)
+            if (score > alpha && score < beta)
                 goto full_window;
         }
 
