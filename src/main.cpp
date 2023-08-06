@@ -645,12 +645,6 @@ i32 alphabeta(Position &pos,
         // Material gain
         const i32 gain = max_material[move.promo] + max_material[piece_on(pos, move.to)];
 
-        // Delta pruning
-        if (in_qsearch && !in_check && static_eval + 50 + gain < alpha) {
-            best_score = alpha;
-            break;
-        }
-
         // Forward futility pruning
         if (depth < 8 && !in_qsearch && !in_check && !(move == tt_move) && static_eval + 100 * depth + gain < alpha) {
             best_score = alpha;
