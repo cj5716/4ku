@@ -346,7 +346,7 @@ void generate_piece_moves(Move *const movelist,
 }
 
 const i32 phases[] = {0, 1, 1, 2, 4, 0};
-const i32 max_material[] = {127, 412, 441, 767, 1468, 0, 0};
+const i32 piece_values[] = {100, 233, 279, 428, 873, 0, 0};
 const i32 material[] = {S(106, 127), S(377, 412), S(394, 441), S(492, 767), S(977, 1468), 0};
 const i32 pst_rank[][8] = {
     {0, S(-3, 0), S(-3, -1), S(-1, -1), S(2, 0), S(5, 2), 0, 0},
@@ -616,7 +616,7 @@ i32 alphabeta(Position &pos,
         // then we'll use that first and delay sorting one iteration.
         if (i == !(no_move == tt_move))
             for (i32 j = 0; j < num_moves; ++j) {
-                const i32 gain = max_material[moves[j].promo] + max_material[piece_on(pos, moves[j].to)];
+                const i32 gain = piece_values[moves[j].promo] + piece_values[piece_on(pos, moves[j].to)];
                 if (gain)
                     move_scores[j] = gain + (1LL << 54);
                 else if (moves[j] == stack[ply].killer)
@@ -643,7 +643,7 @@ i32 alphabeta(Position &pos,
         move_scores[best_move_index] = move_scores[i];
 
         // Material gain
-        const i32 gain = max_material[move.promo] + max_material[piece_on(pos, move.to)];
+        const i32 gain = piece_values[move.promo] + piece_values[piece_on(pos, move.to)];
 
         // Delta pruning
         if (in_qsearch && !in_check && static_eval + 50 + gain < alpha) {
