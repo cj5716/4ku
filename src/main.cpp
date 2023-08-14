@@ -550,7 +550,7 @@ i32 alphabeta(Position &pos,
             return tt_entry.score;
     }
     // Internal iterative reduction
-    else if (depth > 3)
+    else if (!in_check && depth > 3)
         depth--;
 
     i32 static_eval = eval(pos);
