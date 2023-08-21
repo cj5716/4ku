@@ -538,6 +538,8 @@ i32 alphabeta(Position &pos,
             if (old_hash == tt_key)
                 return 0;
     }
+    if (in_qsearch)
+        depth = 0;
 
     // TT Probing
     TT_Entry &tt_entry = transposition_table[tt_key % num_tt_entries];
@@ -757,7 +759,7 @@ i32 alphabeta(Position &pos,
         return in_qsearch ? best_score : in_check ? ply - mate_score : 0;
 
     // Save to TT
-    tt_entry = {tt_key, best_move, best_score, in_qsearch ? 0 : depth, tt_flag};
+    tt_entry = {tt_key, best_move, best_score, depth, tt_flag};
 
     return best_score;
 }
