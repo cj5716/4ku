@@ -618,7 +618,7 @@ i32 alphabeta(Position &pos,
                 const i32 gain = max_material[moves[j].promo] + max_material[piece_on(pos, moves[j].to)];
                 if (gain)
                     move_scores[j] = gain + (1LL << 54);
-                else if (moves[j] == stack[ply].killer)
+                else if (moves[j] == stack[ply].killer && do_null)
                     move_scores[j] = 1LL << 50;
                 else
                     move_scores[j] = hh_table[pos.flipped][moves[j].from][moves[j].to];
