@@ -537,10 +537,7 @@ i32 alphabeta(Position &pos,
         for (const u64 old_hash : hash_history)
             if (old_hash == tt_key)
             {
-                if (alpha < 0)
-                    alpha = 0;
-
-                if (alpha >= beta)
+                if ((alpha = 0) >= beta)
                     return alpha;
 
                 else
