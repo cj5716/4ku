@@ -532,11 +532,20 @@ i32 alphabeta(Position &pos,
     const i32 in_qsearch = depth <= 0;
     const u64 tt_key = get_hash(pos);
 
-    if (ply > 0 && !in_qsearch) {
+    if (ply > 0 && !in_qsearch && alpha < 0) {
         // Repetition detection
         for (const u64 old_hash : hash_history)
             if (old_hash == tt_key)
-                return 0;
+            {
+                if (alpha < 0)
+                    alpha = 0;
+
+                if (alpha >= beta)
+                    return alpha;
+
+                else
+                    break;
+            }
     }
 
     // TT Probing
