@@ -753,7 +753,7 @@ i32 alphabeta(Position &pos,
     hash_history.pop_back();
 
     // Return mate or draw scores if no moves found
-    if (best_score == -inf)
+    if (!num_moves_evaluated)
         return in_qsearch ? best_score : in_check ? ply - mate_score : 0;
 
     // Save to TT
