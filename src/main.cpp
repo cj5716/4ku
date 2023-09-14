@@ -104,6 +104,9 @@ struct [[nodiscard]] TT_Entry {
 
 u64 keys[848];
 
+// Quiet history tables
+int64_t hh_table[2][64][64] = {};
+
 // Engine options
 u64 num_tt_entries = 64ULL << 15;  // The first value is the size in megabytes
 i32 thread_count = 1;
@@ -518,7 +521,6 @@ i32 alphabeta(Position &pos,
               const int64_t stop_time,
               i32 &stop,
               Stack *const stack,
-              int64_t (&hh_table)[2][64][64],
               vector<u64> &hash_history,
               const i32 do_null = true) {
     // Don't overflow the stack
@@ -590,7 +592,6 @@ i32 alphabeta(Position &pos,
                            stop_time,
                            stop,
                            stack,
-                           hh_table,
                            hash_history,
                            false) >= beta)
                 return beta;
@@ -677,7 +678,6 @@ i32 alphabeta(Position &pos,
                                stop_time,
                                stop,
                                stack,
-                               hh_table,
                                hash_history);
         else {
             // Late move reduction
@@ -699,7 +699,6 @@ i32 alphabeta(Position &pos,
                                stop_time,
                                stop,
                                stack,
-                               hh_table,
                                hash_history);
 
             if (reduction > 0 && score > alpha) {
@@ -816,7 +815,7 @@ auto iteratively_deepen(Position &pos,
                         const i32 allocated_time,
                         i32 &stop) {
     Stack stack[128] = {};
-    int64_t hh_table[2][64][64] = {};
+    
     // minify enable filter delete
     u64 nodes = 0;
     // minify disable filter delete
@@ -837,7 +836,6 @@ auto iteratively_deepen(Position &pos,
                                        start_time + allocated_time,
                                        stop,
                                        stack,
-                                       hh_table,
                                        hash_history);
 
         // Hard time limit exceeded
@@ -1029,6 +1027,7 @@ i32 main(
         const u64 start_time = now();
         for (const auto &[fen, depth] : bench_positions) {
             i32 stop = false;
+            memset(hh_table, 0, sizeof(hh_table));
             set_fen(pos, fen);
             iteratively_deepen(pos, hash_history, 0, depth, total_nodes, now(), 1 << 30, stop);
         }
@@ -1149,6 +1148,7 @@ i32 main(
             // Set to startpos
             pos = Position();
             hash_history.clear();
+            memset(hh_table, 0, sizeof(hh_table));
 
             // minify enable filter delete
             string fen;
