@@ -580,6 +580,7 @@ i32 alphabeta(Position &pos,
             Position npos = pos;
             flip(npos);
             npos.ep = 0;
+            memset(stack[ply].cont_hist, 0, sizeof(stack[ply].cont_hist));
             if (-alphabeta(npos,
                            -beta,
                            -beta + 1,
