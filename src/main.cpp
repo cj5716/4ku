@@ -81,7 +81,7 @@ struct [[nodiscard]] Stack {
     Move moves[256];
     Move quiets_evaluated[256];
     int64_t move_scores[256];
-    int64_t cont_hist[2][6][64];
+    int64_t cont_hist[2][7][64];
     Move move;
     Move killer;
     i32 score;
@@ -580,7 +580,7 @@ i32 alphabeta(Position &pos,
             Position npos = pos;
             flip(npos);
             npos.ep = 0;
-            memset(stack[ply].cont_hist, 0, sizeof(stack[ply].cont_hist));
+            stack[ply].cont_hist[pos.flipped][None][0] = 0;
             if (-alphabeta(npos,
                            -beta,
                            -beta + 1,
@@ -622,9 +622,12 @@ i32 alphabeta(Position &pos,
                 else if (moves[j] == stack[ply].killer)
                     move_scores[j] = 1LL << 50;
                 else
-                    move_scores[j] = hh_table[pos.flipped][moves[j].from][moves[j].to] +
-                                     stack[ply - 1].cont_hist[pos.flipped][piece_on(pos, moves[j].from)][moves[j].to] +
-                                     stack[ply - 2].cont_hist[pos.flipped][piece_on(pos, moves[j].from)][moves[j].to];
+                    move_scores[j] =
+                        hh_table[pos.flipped][moves[j].from][moves[j].to] +
+                        (ply > 0 ? stack[ply - 1].cont_hist[pos.flipped][piece_on(pos, moves[j].from)][moves[j].to]
+                                 : 0) +
+                        (ply > 1 ? stack[ply - 2].cont_hist[pos.flipped][piece_on(pos, moves[j].from)][moves[j].to]
+                                 : 0);
             }
 
         // Find best move remaining
@@ -739,8 +742,10 @@ i32 alphabeta(Position &pos,
             tt_flag = Lower;
             if (!gain) {
                 hh_table[pos.flipped][move.from][move.to] += depth * depth;
-                stack[ply - 1].cont_hist[pos.flipped][piece_on(pos, move.from)][move.to] += depth * depth;
-                stack[ply - 2].cont_hist[pos.flipped][piece_on(pos, move.from)][move.to] += depth * depth;
+                if (ply > 0)
+                    stack[ply - 1].cont_hist[pos.flipped][piece_on(pos, move.from)][move.to] += depth * depth;
+                if (ply > 1)
+                    stack[ply - 2].cont_hist[pos.flipped][piece_on(pos, move.from)][move.to] += depth * depth;
                 for (i32 j = 0; j < num_quiets_evaluated - 1; ++j)
                     hh_table[pos.flipped][stack[ply].quiets_evaluated[j].from][stack[ply].quiets_evaluated[j].to] -=
                         depth * depth;
