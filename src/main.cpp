@@ -80,6 +80,7 @@ const Move no_move{};
 struct [[nodiscard]] Stack {
     Move moves[256];
     Move quiets_evaluated[256];
+    int64_t cont_hist[2][7][64];
     int64_t move_scores[256];
     Move move;
     Move killer;
@@ -519,6 +520,7 @@ i32 alphabeta(Position &pos,
               const int64_t stop_time,
               i32 &stop,
               Stack *const stack,
+              int64_t (&ch_table)[2][7][64][2][7][64],
               int64_t (&hh_table)[2][64][64],
               vector<u64> &hash_history,
               const i32 do_null = true) {
@@ -580,6 +582,7 @@ i32 alphabeta(Position &pos,
             Position npos = pos;
             flip(npos);
             npos.ep = 0;
+            stack[ply].cont_hist = ch_table[pos.flipped][None][0];
             if (-alphabeta(npos,
                            -beta,
                            -beta + 1,
@@ -591,6 +594,7 @@ i32 alphabeta(Position &pos,
                            stop_time,
                            stop,
                            stack,
+                           ch_table,
                            hh_table,
                            hash_history,
                            false) >= beta)
@@ -621,7 +625,9 @@ i32 alphabeta(Position &pos,
                 else if (moves[j] == stack[ply].killer)
                     move_scores[j] = 1LL << 50;
                 else
-                    move_scores[j] = hh_table[pos.flipped][moves[j].from][moves[j].to];
+                    move_scores[j] = hh_table[pos.flipped][moves[j].from][moves[j].to]
+                                   + (ply > 0 ? stack[ply - 1].cont_hist[pos.flipped][piece_on(pos, moves[j].from)][moves[j].to] : 0)
+                                   + (ply > 1 ? stack[ply - 2].cont_hist[pos.flipped][piece_on(pos, moves[j].from)][moves[j].to] : 0);
             }
 
         // Find best move remaining
@@ -655,6 +661,7 @@ i32 alphabeta(Position &pos,
         }
 
         Position npos = pos;
+        stack[ply].cont_hist = ch_table[pos.flipped][piece_on(pos, move.from)][move.to];
         if (!makemove(npos, move))
             continue;
 
@@ -676,6 +683,7 @@ i32 alphabeta(Position &pos,
                                stop_time,
                                stop,
                                stack,
+                               ch_table,
                                hh_table,
                                hash_history);
         else {
@@ -698,6 +706,7 @@ i32 alphabeta(Position &pos,
                                stop_time,
                                stop,
                                stack,
+                               ch_table,
                                hh_table,
                                hash_history);
 
@@ -736,6 +745,8 @@ i32 alphabeta(Position &pos,
             tt_flag = Lower;
             if (!gain) {
                 hh_table[pos.flipped][move.from][move.to] += depth * depth;
+                if (ply > 0) stack[ply - 1].cont_hist[pos.flipped][piece_on(pos, move.from)][move.to] += depth * depth;
+                if (ply > 1) stack[ply - 2].cont_hist[pos.flipped][piece_on(pos, move.from)][move.to] += depth * depth;
                 for (i32 j = 0; j < num_quiets_evaluated - 1; ++j)
                     hh_table[pos.flipped][stack[ply].quiets_evaluated[j].from][stack[ply].quiets_evaluated[j].to] -=
                         depth * depth;
@@ -816,6 +827,7 @@ auto iteratively_deepen(Position &pos,
                         i32 &stop) {
     Stack stack[128] = {};
     int64_t hh_table[2][64][64] = {};
+    int64_t ch_table[2][7][64][2][7][64] = {};
     // minify enable filter delete
     u64 nodes = 0;
     // minify disable filter delete
@@ -836,6 +848,7 @@ auto iteratively_deepen(Position &pos,
                                        start_time + allocated_time,
                                        stop,
                                        stack,
+                                       ch_table,
                                        hh_table,
                                        hash_history);
 
