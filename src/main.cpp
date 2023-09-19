@@ -84,6 +84,7 @@ struct [[nodiscard]] Stack {
     Move move;
     Move killer;
     i32 score;
+    i32 ply;
 };
 
 // Static eval using the TT and TT cutoffs rely on this specific ordering, do not change it.
@@ -512,7 +513,6 @@ i32 alphabeta(Position &pos,
               i32 alpha,
               const i32 beta,
               i32 depth,
-              const i32 ply,
               // minify enable filter delete
               u64 &nodes,
               // minify disable filter delete
@@ -523,7 +523,7 @@ i32 alphabeta(Position &pos,
               vector<u64> &hash_history,
               const i32 do_null = true) {
     // Don't overflow the stack
-    if (ply > 127)
+    if (stack->ply > 124)
         return eval(pos);
 
     // Check extensions
@@ -533,7 +533,7 @@ i32 alphabeta(Position &pos,
     const i32 in_qsearch = depth <= 0;
     const u64 tt_key = get_hash(pos);
 
-    if (ply > 0 && !in_qsearch) {
+    if (stack->ply > 0 && !in_qsearch) {
         // Repetition detection
         for (const u64 old_hash : hash_history)
             if (old_hash == tt_key)
@@ -554,8 +554,8 @@ i32 alphabeta(Position &pos,
     else if (depth > 3)
         depth--;
 
-    i32 static_eval = stack[ply].score = eval(pos);
-    const i32 improving = ply > 1 && static_eval > stack[ply - 2].score;
+    i32 static_eval = stack->score = eval(pos);
+    const i32 improving = stack->ply > 1 && static_eval > (stack - 2)->score;
 
     // If static_eval <= tt_entry.score, tt_entry.flag has to be lower or exact for the condition to be true.
     // Otherwise, tt_entry.flag has to be upper or exact.
@@ -568,7 +568,7 @@ i32 alphabeta(Position &pos,
         alpha = static_eval;
     }
 
-    if (ply > 0 && !in_qsearch && !in_check && alpha == beta - 1) {
+    if (stack->ply > 0 && !in_qsearch && !in_check && alpha == beta - 1) {
         // Reverse futility pruning
         if (depth < 7) {
             if (static_eval - 66 * (depth - improving) >= beta)
@@ -584,13 +584,12 @@ i32 alphabeta(Position &pos,
                            -beta,
                            -beta + 1,
                            depth - 4 - depth / 6 - min((static_eval - beta) / 200, 3),
-                           ply + 1,
                            // minify enable filter delete
                            nodes,
                            // minify disable filter delete
                            stop_time,
                            stop,
-                           stack,
+                           stack + 1,
                            hh_table,
                            hash_history,
                            false) >= beta)
@@ -606,8 +605,8 @@ i32 alphabeta(Position &pos,
     i32 best_score = in_qsearch ? static_eval : -inf;
     auto best_move = tt_move;
 
-    auto &moves = stack[ply].moves;
-    auto &move_scores = stack[ply].move_scores;
+    auto &moves = stack->moves;
+    auto &move_scores = stack->move_scores;
     const i32 num_moves = movegen(pos, moves, in_qsearch);
 
     for (i32 i = 0; i < num_moves; ++i) {
@@ -618,7 +617,7 @@ i32 alphabeta(Position &pos,
                 const i32 gain = max_material[moves[j].promo] + max_material[piece_on(pos, moves[j].to)];
                 if (gain)
                     move_scores[j] = gain + (1LL << 54);
-                else if (moves[j] == stack[ply].killer)
+                else if (moves[j] == stack->killer)
                     move_scores[j] = 1LL << 50;
                 else
                     move_scores[j] = hh_table[pos.flipped][moves[j].from][moves[j].to];
@@ -669,13 +668,12 @@ i32 alphabeta(Position &pos,
                                -beta,
                                -alpha,
                                depth - 1,
-                               ply + 1,
                                // minify enable filter delete
                                nodes,
                                // minify disable filter delete
                                stop_time,
                                stop,
-                               stack,
+                               stack + 1,
                                hh_table,
                                hash_history);
         else {
@@ -691,13 +689,12 @@ i32 alphabeta(Position &pos,
                                -alpha - 1,
                                -alpha,
                                depth - reduction - 1,
-                               ply + 1,
                                // minify enable filter delete
                                nodes,
                                // minify disable filter delete
                                stop_time,
                                stop,
-                               stack,
+                               stack + 1,
                                hh_table,
                                hash_history);
 
@@ -718,7 +715,7 @@ i32 alphabeta(Position &pos,
 
         num_moves_evaluated++;
         if (!gain) {
-            stack[ply].quiets_evaluated[num_quiets_evaluated] = move;
+            stack->quiets_evaluated[num_quiets_evaluated] = move;
             num_quiets_evaluated++;
         }
 
@@ -728,7 +725,7 @@ i32 alphabeta(Position &pos,
                 best_move = move;
                 tt_flag = Exact;
                 alpha = score;
-                stack[ply].move = move;
+                stack->move = move;
             }
         }
 
@@ -737,9 +734,9 @@ i32 alphabeta(Position &pos,
             if (!gain) {
                 hh_table[pos.flipped][move.from][move.to] += depth * depth;
                 for (i32 j = 0; j < num_quiets_evaluated - 1; ++j)
-                    hh_table[pos.flipped][stack[ply].quiets_evaluated[j].from][stack[ply].quiets_evaluated[j].to] -=
+                    hh_table[pos.flipped][stack->quiets_evaluated[j].from][stack->quiets_evaluated[j].to] -=
                         depth * depth;
-                stack[ply].killer = move;
+                stack->killer = move;
             }
             break;
         }
@@ -752,7 +749,7 @@ i32 alphabeta(Position &pos,
 
     // Return mate or draw scores if no moves found
     if (best_score == -inf)
-        return in_check ? ply - mate_score : 0;
+        return in_check ? stack->ply - mate_score : 0;
 
     // Save to TT
     tt_entry = {tt_key, best_move, best_score, in_qsearch ? 0 : depth, tt_flag};
@@ -815,6 +812,8 @@ auto iteratively_deepen(Position &pos,
                         const i32 allocated_time,
                         i32 &stop) {
     Stack stack[128] = {};
+    for (i32 i = 0; i < 128; ++i)
+        (stack + i)->ply = i - 2;
     int64_t hh_table[2][64][64] = {};
     // minify enable filter delete
     u64 nodes = 0;
@@ -829,13 +828,12 @@ auto iteratively_deepen(Position &pos,
                                        score - window,
                                        score + window,
                                        i,
-                                       0,
                                        // minify enable filter delete
                                        nodes,
                                        // minify disable filter delete
                                        start_time + allocated_time,
                                        stop,
-                                       stack,
+                                       &stack[2],
                                        hh_table,
                                        hash_history);
 
@@ -863,7 +861,7 @@ auto iteratively_deepen(Position &pos,
             // Not a lowerbound - a fail low won't have a meaningful PV.
             if (newscore > score - window) {
                 cout << " pv";
-                print_pv(pos, stack[0].move, hash_history);
+                print_pv(pos, stack[2].move, hash_history);
             }
             cout << "\n";
         }
@@ -887,7 +885,7 @@ auto iteratively_deepen(Position &pos,
         if (!research && now() >= start_time + allocated_time / 10)
             break;
     }
-    return stack[0].move;
+    return stack[2].move;
 }
 
 // minify enable filter delete
