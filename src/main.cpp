@@ -158,7 +158,7 @@ vector<TT_Entry> transposition_table;
     return !memcmp(&rhs, &lhs, sizeof(Move));
 }
 
-[[nodiscard]] auto move_str(const Move &move, const i32 flip) {
+[[nodiscard]] string move_str(const Move &move, const i32 flip) {
     string str;
     str += 'a' + move.from % 8;
     str += '1' + (move.from / 8 ^ 7 * flip);
@@ -716,10 +716,8 @@ i32 alphabeta(Position &pos,
         }
 
         num_moves_evaluated++;
-        if (!gain) {
-            stack[ply].quiets_evaluated[num_quiets_evaluated] = move;
-            num_quiets_evaluated++;
-        }
+        if (!gain)
+            stack[ply].quiets_evaluated[num_quiets_evaluated++] = move;
 
         if (score > best_score) {
             best_score = score;
