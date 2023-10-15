@@ -78,9 +78,7 @@ struct Move {
 const Move no_move{};
 
 struct [[nodiscard]] Stack {
-    Move moves[256];
     Move quiets_evaluated[256];
-    int64_t move_scores[256];
     Move move;
     Move killer;
     i32 score;
@@ -606,8 +604,8 @@ i32 alphabeta(Position &pos,
     i32 best_score = in_qsearch ? static_eval : -inf;
     auto best_move = tt_move;
 
-    auto &moves = stack[ply].moves;
-    auto &move_scores = stack[ply].move_scores;
+    Move moves[256] = {};
+    int64_t move_scores[256] = {};
     const i32 num_moves = movegen(pos, moves, in_qsearch);
 
     for (i32 i = 0; i < num_moves; ++i) {
