@@ -79,7 +79,6 @@ const Move no_move{};
 
 struct [[nodiscard]] Stack {
     Move moves[256];
-    Move quiets_evaluated[256];
     int64_t move_scores[256];
     Move move;
     Move killer;
@@ -602,7 +601,6 @@ i32 alphabeta(Position &pos,
     uint16_t tt_flag = Upper;
 
     i32 num_moves_evaluated = 0;
-    i32 num_quiets_evaluated = 0;
     i32 best_score = in_qsearch ? static_eval : -inf;
     auto best_move = tt_move;
 
@@ -638,8 +636,8 @@ i32 alphabeta(Position &pos,
                     best_move_index = j;
 
         const Move move = moves[best_move_index];
-        moves[best_move_index] = moves[i];
-        move_scores[best_move_index] = move_scores[i];
+        swap(moves[best_move_index], moves[i]);
+        swap(move_scores[best_move_index], move_scores[i]);
 
         // Material gain
         const i32 gain = max_material[move.promo] + max_material[piece_on(pos, move.to)];
@@ -716,8 +714,6 @@ i32 alphabeta(Position &pos,
         }
 
         num_moves_evaluated++;
-        if (!gain)
-            stack[ply].quiets_evaluated[num_quiets_evaluated++] = move;
 
         if (score > best_score) {
             best_score = score;
@@ -733,16 +729,16 @@ i32 alphabeta(Position &pos,
             tt_flag = Lower;
             if (!gain) {
                 hh_table[pos.flipped][move.from][move.to] += depth * depth;
-                for (i32 j = 0; j < num_quiets_evaluated - 1; ++j)
-                    hh_table[pos.flipped][stack[ply].quiets_evaluated[j].from][stack[ply].quiets_evaluated[j].to] -=
-                        depth * depth;
+                for (i32 j = 0; j < i; ++j)
+                    if (!(max_material[moves[j].promo] + max_material[piece_on(pos, moves[j].to)]))
+                        hh_table[pos.flipped][moves[j].from][moves[j].to] -= depth * depth;
                 stack[ply].killer = move;
             }
             break;
         }
 
-        // Late move pruning based on quiet move count
-        if (!in_check && alpha == beta - 1 && num_quiets_evaluated > 3 + depth * depth >> !improving)
+        // Late move pruning based on move count
+        if (!in_check && alpha == beta - 1 && !gain && num_moves_evaluated > 5 + depth * depth >> !improving)
             break;
     }
     hash_history.pop_back();
