@@ -652,8 +652,10 @@ i32 alphabeta(Position &pos,
             break;
 
         Position npos = pos;
-        if (!makemove(npos, move))
+        if (!makemove(npos, move)) {
+            moves[i] = no_move;
             continue;
+        }
 
         // minify enable filter delete
         nodes++;
