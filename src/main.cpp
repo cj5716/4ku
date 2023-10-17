@@ -519,7 +519,7 @@ i32 alphabeta(Position &pos,
               const int64_t stop_time,
               i32 &stop,
               Stack *const stack,
-              int64_t (&hh_table)[2][64][64],
+              int64_t (&hh_table)[2][7][64],
               vector<u64> &hash_history,
               const i32 do_null = true) {
     // Don't overflow the stack
@@ -621,7 +621,7 @@ i32 alphabeta(Position &pos,
                 else if (moves[j] == stack[ply].killer)
                     move_scores[j] = 1LL << 50;
                 else
-                    move_scores[j] = hh_table[pos.flipped][moves[j].from][moves[j].to];
+                    move_scores[j] = hh_table[pos.flipped][piece_on(pos, moves[j].from)][moves[j].to];
             }
 
         // Find best move remaining
@@ -681,8 +681,8 @@ i32 alphabeta(Position &pos,
             // Late move reduction
             i32 reduction = depth > 2 && num_moves_evaluated > 4 && !gain
                                 ? num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) + !improving +
-                                      (hh_table[pos.flipped][move.from][move.to] < 0) -
-                                      (hh_table[pos.flipped][move.from][move.to] > 0)
+                                      (hh_table[pos.flipped][piece_on(pos, move.from)][move.to] < 0) -
+                                      (hh_table[pos.flipped][piece_on(pos, move.from)][move.to] > 0)
                                 : 0;
 
         zero_window:
@@ -732,10 +732,10 @@ i32 alphabeta(Position &pos,
         if (alpha >= beta) {
             tt_flag = Lower;
             if (!gain) {
-                hh_table[pos.flipped][move.from][move.to] += depth * depth;
+                hh_table[pos.flipped][piece_on(pos, move.from)][move.to] += depth * depth;
                 for (i32 j = 0; j < num_quiets_evaluated - 1; ++j)
-                    hh_table[pos.flipped][stack[ply].quiets_evaluated[j].from][stack[ply].quiets_evaluated[j].to] -=
-                        depth * depth;
+                    hh_table[pos.flipped][piece_on(pos, stack[ply].quiets_evaluated[j].from)]
+                            [stack[ply].quiets_evaluated[j].to] -= depth * depth;
                 stack[ply].killer = move;
             }
             break;
@@ -812,7 +812,7 @@ auto iteratively_deepen(Position &pos,
                         const i32 allocated_time,
                         i32 &stop) {
     Stack stack[128] = {};
-    int64_t hh_table[2][64][64] = {};
+    int64_t hh_table[2][7][64] = {};
     // minify enable filter delete
     u64 nodes = 0;
     // minify disable filter delete
