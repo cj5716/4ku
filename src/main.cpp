@@ -39,6 +39,8 @@ using u64 = uint64_t;
 const i32 mate_score = 1 << 15;
 const i32 inf = 1 << 16;
 
+typedef int64_t ch_entry_t[2][7][64];
+
 enum
 {
     Pawn,
@@ -81,6 +83,7 @@ struct [[nodiscard]] Stack {
     Move moves[256];
     Move quiets_evaluated[256];
     int64_t move_scores[256];
+    ch_entry_t *ch_entry;
     Move move;
     Move killer;
     i32 score;
@@ -556,6 +559,7 @@ i32 alphabeta(Position &pos,
               i32 &stop,
               Stack *const stack,
               int64_t (&hh_table)[2][64][64],
+              ch_entry_t (&ch_table)[2][7][64],
               vector<u64> &hash_history,
               const i32 do_null = true) {
     // Don't overflow the stack
@@ -617,6 +621,7 @@ i32 alphabeta(Position &pos,
         if (depth > 2 && static_eval >= beta && do_null && pos.colour[0] & ~(pos.pieces[Pawn] | pos.pieces[King])) {
             Position npos = pos;
             flip(npos);
+            stack[ply].ch_entry = &ch_table[0][0][0];
             npos.ep = 0;
             if (-alphabeta(npos,
                            -beta,
@@ -630,6 +635,7 @@ i32 alphabeta(Position &pos,
                            stop,
                            stack,
                            hh_table,
+                           ch_table,
                            hash_history,
                            false) >= beta)
                 return beta;
@@ -658,6 +664,8 @@ i32 alphabeta(Position &pos,
                 move_scores[j] = gain                            ? gain + (1LL << 54)
                                  : moves[j] == stack[ply].killer ? 1LL << 50
                                                                  : hh_table[pos.flipped][moves[j].from][moves[j].to];
+                                                                 + (ply > 0 ? *stack[ply - 1].ch_entry[pos.flipped][piece_on(pos, moves[j].from)][moves[j].to] : 0)
+                                                                 + (ply > 1 ? *stack[ply - 2].ch_entry[pos.flipped][piece_on(pos, moves[j].from)][moves[j].to] : 0);
             }
 
         // Find best move remaining
@@ -691,6 +699,8 @@ i32 alphabeta(Position &pos,
         if (!makemove(npos, move))
             continue;
 
+        stack[ply].ch_entry = &ch_table[pos.flipped][piece_on(pos, move.from)][move.to];
+
         // minify enable filter delete
         nodes++;
         // minify disable filter delete
@@ -710,6 +720,7 @@ i32 alphabeta(Position &pos,
                                stop,
                                stack,
                                hh_table,
+                               ch_table,
                                hash_history);
         else {
             // Late move reduction
@@ -732,6 +743,7 @@ i32 alphabeta(Position &pos,
                                stop,
                                stack,
                                hh_table,
+                               ch_table,
                                hash_history);
 
             if (reduction > 0 && score > alpha) {
@@ -764,8 +776,22 @@ i32 alphabeta(Position &pos,
                     tt_flag = Lower;
                     if (!gain) {
                         hh_table[pos.flipped][move.from][move.to] += depth * depth;
+                        if (ply > 0)
+                            *stack[ply - 1].ch_entry[pos.flipped][piece_on(pos, move.from)][move.to] += depth * depth;
+
+                        if (ply > 1)
+                            *stack[ply - 2].ch_entry[pos.flipped][piece_on(pos, move.from)][move.to] += depth * depth;
+
                         for (i32 j = 0; j < num_quiets_evaluated - 1; ++j)
+                        {
                             hh_table[pos.flipped][quiets_evaluated[j].from][quiets_evaluated[j].to] -= depth * depth;
+
+                            if (ply > 0)
+                                *stack[ply - 1].ch_entry[pos.flipped][piece_on(pos, quiets_evaluated[j].from)][quiets_evaluated[j].to] -= depth * depth;
+
+                            if (ply > 1)
+                                *stack[ply - 2].ch_entry[pos.flipped][piece_on(pos, quiets_evaluated[j].from)][quiets_evaluated[j].to] -= depth * depth;
+                        }
                         stack[ply].killer = move;
                     }
                     break;
@@ -844,6 +870,8 @@ auto iteratively_deepen(Position &pos,
                         i32 &stop) {
     Stack stack[128] = {};
     int64_t hh_table[2][64][64] = {};
+    ch_entry_t ch_table[2][7][64] = {};
+    
     // minify enable filter delete
     u64 nodes = 0;
     // minify disable filter delete
@@ -865,6 +893,7 @@ auto iteratively_deepen(Position &pos,
                                        stop,
                                        stack,
                                        hh_table,
+                                       ch_table,
                                        hash_history);
 
         // Hard time limit exceeded
