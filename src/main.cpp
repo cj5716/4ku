@@ -609,6 +609,7 @@ i32 alphabeta(Position &pos,
     auto &moves = stack[ply].moves;
     auto &move_scores = stack[ply].move_scores;
     const i32 num_moves = movegen(pos, moves, in_qsearch);
+    depth += num_moves == 1;
 
     for (i32 i = 0; i < num_moves; ++i) {
         // Score moves at the first loop, except if we have a hash move,
