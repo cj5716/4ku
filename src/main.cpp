@@ -738,7 +738,8 @@ i32 alphabeta(Position &pos,
                         stack[ply].killer = move;
                     }
                     break;
-                }
+                } else
+                    depth -= depth > 1;
             }
         }
         // Late move pruning based on quiet move count
