@@ -385,7 +385,6 @@ const i32 pawn_passed_blocked[] = {S(-8, -13), S(9, -37), S(9, -74), S(17, -97)}
 const i32 pawn_passed_king_distance[] = {S(2, -6), S(-4, 10)};
 const i32 bishop_pair = S(33, 65);
 const i32 king_shield[] = {S(42, -10), S(32, -9)};
-const i32 pawn_attacked[] = {S(-64, -14), S(-155, -142)};
 
 [[nodiscard]] i32 eval(Position &pos) {
     // Include side to move bonus
@@ -396,7 +395,6 @@ const i32 pawn_attacked[] = {S(-64, -14), S(-155, -142)};
         // our pawns, their pawns
         const u64 pawns[] = {pos.colour[0] & pos.pieces[Pawn], pos.colour[1] & pos.pieces[Pawn]};
         const u64 protected_by_pawns = nw(pawns[0]) | ne(pawns[0]);
-        const u64 attacked_by_pawns = se(pawns[1]) | sw(pawns[1]);
         const i32 kings[] = {lsb(pos.colour[0] & pos.pieces[King]), lsb(pos.colour[1] & pos.pieces[King])};
 
         // Bishop pair
@@ -434,7 +432,7 @@ const i32 pawn_attacked[] = {S(-64, -14), S(-155, -142)};
 
                 if (p == Pawn) {
                     // Passed pawns
-                    if (rank > 2 && !(0x101010101010101ULL << sq & (pawns[1] | attacked_by_pawns))) {
+                    if (rank > 2 && !(0x101010101010101ULL << sq & (pawns[1] | se(pawns[1]) | sw(pawns[1])))) {
                         score += passers[rank - 3];
 
                         // Protected passed pawns
@@ -452,12 +450,6 @@ const i32 pawn_attacked[] = {S(-64, -14), S(-155, -142)};
                                      max(abs(kings[i] / 8 - rank - 1), abs(kings[i] % 8 - file));
                     }
                 } else {
-                    // Pawn attacks
-                    if (piece_bb & attacked_by_pawns)
-                        // If we're to move, we'll just lose some options and our tempo.
-                        // If we're not to move, we lose a piece?
-                        score += pawn_attacked[c];
-
                     // Open or semi-open files
                     const u64 file_bb = 0x101010101010101ULL << file;
                     if (!(file_bb & pawns[0]))
