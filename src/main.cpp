@@ -461,14 +461,13 @@ const i32 pawn_attacked[] = {S(-64, -14), S(-155, -142)};
                         score += pawn_attacked[c];
 
                     u64 mobility = 0;
-                    if (p == Bishop || p == Queen) {
+                    if (p == Bishop || p == Queen)
                         mobility |= bishop(sq, all_pieces);
-                    }
-                    if (p == Rook || p == Queen) {
+
+                    if (p == Rook || p == Queen)
                         mobility |= rook(sq, all_pieces);
-                    }
-                    mobility &= ~pos.colour[0] & ~attacked_by_pawns;
-                    score += mobilities[p - 2] * count(mobility);
+
+                    score += mobilities[p - 2] * count(mobility & ~pos.colour[0] & ~attacked_by_pawns);
 
                     // Open or semi-open files
                     const u64 file_bb = 0x101010101010101ULL << file;
