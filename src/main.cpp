@@ -482,7 +482,7 @@ const i32 pawn_attacked[] = {S(-64, -14), S(-155, -142)};
 
     // Tapered eval with endgame scaling based on remaining pawn count of the stronger side
     return (int16_t(score) * phase +
-            (score + 0x8000 >> 16) * (16 + count(pos.colour[score < 0] & pos.pieces[Pawn])) / 24 * (24 - phase)) /
+            (score + 0x8000 >> 16) * (24 + count(pos.colour[score < 0] & pos.pieces[Pawn])) * (24 - phase) / 32) /
            24;
 }
 
