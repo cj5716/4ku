@@ -398,7 +398,6 @@ const i32 pawn_attacked[] = {S(-64, -14), S(-155, -142)};
         const u64 pawns[] = {pos.colour[0] & pos.pieces[Pawn], pos.colour[1] & pos.pieces[Pawn]};
         const u64 protected_by_pawns = nw(pawns[0]) | ne(pawns[0]);
         const u64 attacked_by_pawns = se(pawns[1]) | sw(pawns[1]);
-        const u64 all_pieces = pos.colour[0] | pos.colour[1];
         const i32 kings[] = {lsb(pos.colour[0] & pos.pieces[King]), lsb(pos.colour[1] & pos.pieces[King])};
 
         // Bishop pair
@@ -462,10 +461,10 @@ const i32 pawn_attacked[] = {S(-64, -14), S(-155, -142)};
 
                     u64 mobility = 0;
                     if (p == Bishop || p == Queen)
-                        mobility |= bishop(sq, all_pieces);
+                        mobility |= bishop(sq, pos.colour[0] | pos.colour[1]);
 
                     if (p == Rook || p == Queen)
-                        mobility |= rook(sq, all_pieces);
+                        mobility |= rook(sq, pos.colour[0] | pos.colour[1]);
 
                     score += mobilities[p - 2] * count(mobility & ~pos.colour[0] & ~attacked_by_pawns);
 
