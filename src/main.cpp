@@ -590,7 +590,7 @@ i32 alphabeta(Position &pos,
 
     if (in_qsearch && static_eval > alpha) {
         if (static_eval >= beta)
-            return beta;
+            return static_eval;
         alpha = static_eval;
     }
 
