@@ -400,7 +400,7 @@ const i32 pawn_attacked_penalty[] = {S(64, 14), S(155, 142)};
 
 [[nodiscard]] i32 eval(Position &pos) {
     // Include side to move bonus
-    i32 score = S(28, 10);
+    i32 score = S(30, 10);
     i32 phase = 0;
 
     for (i32 c = 0; c < 2; ++c) {
@@ -607,21 +607,21 @@ i32 alphabeta(Position &pos,
     if (ply > 0 && !in_qsearch && !in_check && alpha == beta - 1) {
         // Reverse futility pruning
         if (depth < 7) {
-            if (static_eval - 66 * (depth - improving) >= beta)
+            if (static_eval - 65 * (depth - improving) >= beta)
                 return static_eval;
 
-            in_qsearch = static_eval + 256 * depth < alpha;
+            in_qsearch = static_eval + 243 * depth < alpha;
         }
 
         // Null move pruning
-        if (depth > 2 && static_eval >= beta && do_null && pos.colour[0] & ~(pos.pieces[Pawn] | pos.pieces[King])) {
+        if (depth > 1 && static_eval >= beta && do_null && pos.colour[0] & ~(pos.pieces[Pawn] | pos.pieces[King])) {
             Position npos = pos;
             flip(npos);
             npos.ep = 0;
             if (-alphabeta(npos,
                            -beta,
                            -alpha,
-                           depth - 4 - depth / 6 - min((static_eval - beta) / 200, 3),
+                           depth - 4 - depth / 6 - min((static_eval - beta) / 197, 3),
                            ply + 1,
                            // minify enable filter delete
                            nodes,
@@ -679,12 +679,12 @@ i32 alphabeta(Position &pos,
         const i32 gain = max_material[move.promo] + max_material[piece_on(pos, move.to)];
 
         // Delta pruning
-        if (in_qsearch && !in_check && static_eval + 50 + gain < alpha)
+        if (in_qsearch && !in_check && static_eval + 48 + gain < alpha)
             break;
 
         // Forward futility pruning
-        if (ply > 0 && depth < 8 && !in_qsearch && !in_check && num_moves_evaluated &&
-            static_eval + 100 * depth + gain < alpha)
+        if (ply > 0 && depth < 7 && !in_qsearch && !in_check && num_moves_evaluated &&
+            static_eval + 90 * depth + gain < alpha)
             break;
 
         Position npos = pos;
@@ -714,7 +714,7 @@ i32 alphabeta(Position &pos,
         else {
             // Late move reduction
             i32 reduction = depth > 2 && num_moves_evaluated > 4 && !gain
-                                ? num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) + !improving +
+                                ? num_moves_evaluated / 14 + depth / 16 + (alpha == beta - 1) + !improving +
                                       (hh_table[pos.flipped][move.from][move.to] < 0) -
                                       (hh_table[pos.flipped][move.from][move.to] > 0)
                                 : 0;
@@ -850,7 +850,7 @@ auto iteratively_deepen(Position &pos,
 
     i32 score = 0;
     for (i32 i = 1; i < 128; ++i) {
-        i32 window = 32 + (score * score >> 14);
+        i32 window = 33 + (score * score >> 14);
         i32 research = 0;
     research:
         const i32 newscore = alphabeta(pos,
