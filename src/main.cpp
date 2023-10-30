@@ -769,7 +769,7 @@ i32 alphabeta(Position &pos,
                         stack[ply].killer = move;
                     }
                     break;
-                } else if (depth > 1 && beta < 16384 && score > -16384)
+                } else if (depth > 1 && beta < mate_score / 2 && score > -mate_score / 2)
                     depth--;
             }
         }
