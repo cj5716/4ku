@@ -769,7 +769,8 @@ i32 alphabeta(Position &pos,
                         stack[ply].killer = move;
                     }
                     break;
-                }
+                } else if (depth > 1 && beta < 16384 && score > -16384)
+                    depth--;
             }
         }
         // Late move pruning based on quiet move count
