@@ -353,6 +353,27 @@ void generate_piece_moves(Move *const movelist,
     return (eg << 16) + mg;
 }
 
+namespace O {
+    i32 IirLimit = 3;
+    i32 RfpDepth = 7;
+    i32 RfpMargin = 66;
+    i32 RazorMargin = 256;
+    i32 NmpDepthLimit = 2;
+    i32 NmpDepthReduction = 4;
+    i32 NmpExtraDepthDivisor = 6;
+    i32 NmpBetaDistanceDivisor = 200;
+    i32 NmpBetaDistanceLimit = 3;
+    i32 DeltaMargin = 50;
+    i32 FfpDepthLimit = 8;
+    i32 FfpMargin = 100;
+    i32 LmrDepthLimit = 2;
+    i32 LmrMoveLimit = 4;
+    i32 LmrMoveDivisor = 14;
+    i32 LmrDepthDivisor = 17;
+    i32 Tc1 = 3;
+    i32 Tc2 = 10;
+}
+
 const i32 phases[] = {0, 1, 1, 2, 4, 0};
 const i32 max_material[] = {139, 449, 452, 841, 1674, 0, 0};
 const i32 material[] = {S(100, 139), S(329, 449), S(341, 452), S(455, 841), S(825, 1674), 0};
@@ -588,7 +609,7 @@ i32 alphabeta(Position &pos,
     }
     // Internal iterative reduction
     else
-        depth -= depth > 3;
+        depth -= depth > O::IirLimit;
 
     i32 static_eval = stack[ply].score = eval(pos);
     const i32 improving = ply > 1 && static_eval > stack[ply - 2].score;
@@ -606,22 +627,22 @@ i32 alphabeta(Position &pos,
 
     if (ply > 0 && !in_qsearch && !in_check && alpha == beta - 1) {
         // Reverse futility pruning
-        if (depth < 7) {
-            if (static_eval - 66 * (depth - improving) >= beta)
+        if (depth < O::RfpDepth) {
+            if (static_eval - O::RfpMargin * (depth - improving) >= beta)
                 return static_eval;
 
-            in_qsearch = static_eval + 256 * depth < alpha;
+            in_qsearch = static_eval + O::RazorMargin * depth < alpha;
         }
 
         // Null move pruning
-        if (depth > 2 && static_eval >= beta && do_null && pos.colour[0] & ~(pos.pieces[Pawn] | pos.pieces[King])) {
+        if (depth > O::NmpDepthLimit && static_eval >= beta && do_null && pos.colour[0] & ~(pos.pieces[Pawn] | pos.pieces[King])) {
             Position npos = pos;
             flip(npos);
             npos.ep = 0;
             if (-alphabeta(npos,
                            -beta,
                            -alpha,
-                           depth - 4 - depth / 6 - min((static_eval - beta) / 200, 3),
+                           depth - O::NmpDepthReduction - depth / O::NmpExtraDepthDivisor - min((static_eval - beta) / O::NmpBetaDistanceDivisor, O::NmpBetaDistanceLimit),
                            ply + 1,
                            // minify enable filter delete
                            nodes,
@@ -679,12 +700,12 @@ i32 alphabeta(Position &pos,
         const i32 gain = max_material[move.promo] + max_material[piece_on(pos, move.to)];
 
         // Delta pruning
-        if (in_qsearch && !in_check && static_eval + 50 + gain < alpha)
+        if (in_qsearch && !in_check && static_eval + O::DeltaMargin + gain < alpha)
             break;
 
         // Forward futility pruning
-        if (ply > 0 && depth < 8 && !in_qsearch && !in_check && num_moves_evaluated &&
-            static_eval + 100 * depth + gain < alpha)
+        if (ply > 0 && depth < O::FfpDepthLimit && !in_qsearch && !in_check && num_moves_evaluated &&
+            static_eval + O::FfpMargin * depth + gain < alpha)
             break;
 
         Position npos = pos;
@@ -713,8 +734,8 @@ i32 alphabeta(Position &pos,
                                hash_history);
         else {
             // Late move reduction
-            i32 reduction = depth > 2 && num_moves_evaluated > 4 && !gain
-                                ? num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) + !improving +
+            i32 reduction = depth > O::LmrDepthLimit && num_moves_evaluated > O::LmrMoveLimit && !gain
+                                ? num_moves_evaluated / O::LmrMoveDivisor + depth / O::LmrDepthDivisor + (alpha == beta - 1) + !improving +
                                       (hh_table[pos.flipped][move.from][move.to] < 0) -
                                       (hh_table[pos.flipped][move.from][move.to] > 0)
                                 : 0;
@@ -912,7 +933,7 @@ auto iteratively_deepen(Position &pos,
         score = newscore;
 
         // Early exit after completed ply
-        if (!research && now() >= start_time + allocated_time / 10)
+        if (!research && now() >= start_time + allocated_time / O::Tc2)
             break;
     }
     return stack[0].move;
@@ -1002,6 +1023,9 @@ void set_fen(Position &pos, const string &fen) {
 }
 // minify disable filter delete
 
+#define PRINT_TUNE_OPTION(param) cout << "option name " << #param << " type spin default " << O::param << " min -32768 max 32767\n";
+#define READ_TUNE_OPTION(param) else if (word == #param) { cin >> word; cin >> O::param; }
+
 i32 main(
     // minify enable filter delete
     const i32 argc,
@@ -1085,6 +1109,26 @@ i32 main(
     // minify enable filter delete
     cout << "option name Threads type spin default " << thread_count << " min 1 max 256\n";
     cout << "option name Hash type spin default " << (num_tt_entries >> 15) << " min 1 max 65536\n";
+
+    PRINT_TUNE_OPTION(IirLimit)
+    PRINT_TUNE_OPTION(RfpDepth)
+    PRINT_TUNE_OPTION(RfpMargin)
+    PRINT_TUNE_OPTION(RazorMargin)
+    PRINT_TUNE_OPTION(NmpDepthLimit)
+    PRINT_TUNE_OPTION(NmpDepthReduction)
+    PRINT_TUNE_OPTION(NmpExtraDepthDivisor)
+    PRINT_TUNE_OPTION(NmpBetaDistanceDivisor)
+    PRINT_TUNE_OPTION(NmpBetaDistanceLimit)
+    PRINT_TUNE_OPTION(DeltaMargin)
+    PRINT_TUNE_OPTION(FfpDepthLimit)
+    PRINT_TUNE_OPTION(FfpMargin)
+    PRINT_TUNE_OPTION(LmrDepthLimit)
+    PRINT_TUNE_OPTION(LmrMoveLimit)
+    PRINT_TUNE_OPTION(LmrMoveDivisor)
+    PRINT_TUNE_OPTION(LmrDepthDivisor)
+    PRINT_TUNE_OPTION(Tc1)
+    PRINT_TUNE_OPTION(Tc2)
+
     // minify disable filter delete
     cout << "uciok\n";
 
@@ -1119,7 +1163,26 @@ i32 main(
                 transposition_table.clear();
                 transposition_table.resize(num_tt_entries);
             }
+            READ_TUNE_OPTION(IirLimit)
+            READ_TUNE_OPTION(RfpDepth)
+            READ_TUNE_OPTION(RfpMargin)
+            READ_TUNE_OPTION(RazorMargin)
+            READ_TUNE_OPTION(NmpDepthLimit)
+            READ_TUNE_OPTION(NmpDepthReduction)
+            READ_TUNE_OPTION(NmpExtraDepthDivisor)
+            READ_TUNE_OPTION(NmpBetaDistanceDivisor)
+            READ_TUNE_OPTION(NmpBetaDistanceLimit)
+            READ_TUNE_OPTION(DeltaMargin)
+            READ_TUNE_OPTION(FfpDepthLimit)
+            READ_TUNE_OPTION(FfpMargin)
+            READ_TUNE_OPTION(LmrDepthLimit)
+            READ_TUNE_OPTION(LmrMoveLimit)
+            READ_TUNE_OPTION(LmrMoveDivisor)
+            READ_TUNE_OPTION(LmrDepthDivisor)
+            READ_TUNE_OPTION(Tc1)
+            READ_TUNE_OPTION(Tc2)
         }
+        
         // minify disable filter delete
         else if (word == "go") {
             i32 time_left;
@@ -1170,7 +1233,7 @@ i32 main(
                                                       total_nodes,
                                                       // minify disable filter delete
                                                       start,
-                                                      time_left / 3,
+                                                      time_left / O::Tc1,
                                                       stop);
             stop = true;
             for (i32 i = 1; i < thread_count; ++i)
