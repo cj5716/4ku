@@ -354,6 +354,8 @@ void generate_piece_moves(Move *const movelist,
 }
 
 namespace O {
+    i32 TempoMg = 28;
+    i32 TempoEg = 10;
     i32 IirLimit = 3;
     i32 RfpDepth = 7;
     i32 RfpMargin = 66;
@@ -370,8 +372,10 @@ namespace O {
     i32 LmrMoveLimit = 4;
     i32 LmrMoveDivisor = 14;
     i32 LmrDepthDivisor = 17;
-    i32 Tc1 = 3;
-    i32 Tc2 = 10;
+    i32 LmpMoveCount = 3;
+    i32 AwInitial = 32;
+    i32 TmHardDivisor = 3;
+    i32 TmSoftDivisor = 10;
 }
 
 const i32 phases[] = {0, 1, 1, 2, 4, 0};
@@ -421,7 +425,7 @@ const i32 pawn_attacked_penalty[] = {S(64, 14), S(155, 142)};
 
 [[nodiscard]] i32 eval(Position &pos) {
     // Include side to move bonus
-    i32 score = S(28, 10);
+    i32 score = S(O::TempoMg, O::TempoEg);
     i32 phase = 0;
 
     for (i32 c = 0; c < 2; ++c) {
@@ -794,7 +798,7 @@ i32 alphabeta(Position &pos,
             }
         }
         // Late move pruning based on quiet move count
-        if (!in_check && alpha == beta - 1 && num_quiets_evaluated > 3 + depth * depth >> !improving)
+        if (!in_check && alpha == beta - 1 && num_quiets_evaluated > O::LmpMoveCount + depth * depth >> !improving)
             break;
     }
     hash_history.pop_back();
@@ -871,7 +875,7 @@ auto iteratively_deepen(Position &pos,
 
     i32 score = 0;
     for (i32 i = 1; i < 128; ++i) {
-        i32 window = 32 + (score * score >> 14);
+        i32 window = O::AwInitial + (score * score >> 14);
         i32 research = 0;
     research:
         const i32 newscore = alphabeta(pos,
@@ -933,7 +937,7 @@ auto iteratively_deepen(Position &pos,
         score = newscore;
 
         // Early exit after completed ply
-        if (!research && now() >= start_time + allocated_time / O::Tc2)
+        if (!research && now() >= start_time + allocated_time / O::TmSoftDivisor)
             break;
     }
     return stack[0].move;
@@ -1110,6 +1114,8 @@ i32 main(
     cout << "option name Threads type spin default " << thread_count << " min 1 max 256\n";
     cout << "option name Hash type spin default " << (num_tt_entries >> 15) << " min 1 max 65536\n";
 
+    PRINT_TUNE_OPTION(TempoMg)
+    PRINT_TUNE_OPTION(TempoEg)
     PRINT_TUNE_OPTION(IirLimit)
     PRINT_TUNE_OPTION(RfpDepth)
     PRINT_TUNE_OPTION(RfpMargin)
@@ -1126,8 +1132,10 @@ i32 main(
     PRINT_TUNE_OPTION(LmrMoveLimit)
     PRINT_TUNE_OPTION(LmrMoveDivisor)
     PRINT_TUNE_OPTION(LmrDepthDivisor)
-    PRINT_TUNE_OPTION(Tc1)
-    PRINT_TUNE_OPTION(Tc2)
+    PRINT_TUNE_OPTION(LmpMoveCount)
+    PRINT_TUNE_OPTION(AwInitial)
+    PRINT_TUNE_OPTION(TmHardDivisor)
+    PRINT_TUNE_OPTION(TmSoftDivisor)
 
     // minify disable filter delete
     cout << "uciok\n";
@@ -1163,6 +1171,8 @@ i32 main(
                 transposition_table.clear();
                 transposition_table.resize(num_tt_entries);
             }
+            READ_TUNE_OPTION(TempoMg)
+            READ_TUNE_OPTION(TempoEg)
             READ_TUNE_OPTION(IirLimit)
             READ_TUNE_OPTION(RfpDepth)
             READ_TUNE_OPTION(RfpMargin)
@@ -1179,8 +1189,10 @@ i32 main(
             READ_TUNE_OPTION(LmrMoveLimit)
             READ_TUNE_OPTION(LmrMoveDivisor)
             READ_TUNE_OPTION(LmrDepthDivisor)
-            READ_TUNE_OPTION(Tc1)
-            READ_TUNE_OPTION(Tc2)
+            READ_TUNE_OPTION(LmpMoveCount)
+            READ_TUNE_OPTION(AwInitial)
+            READ_TUNE_OPTION(TmHardDivisor)
+            READ_TUNE_OPTION(TmSoftDivisor)
         }
         
         // minify disable filter delete
@@ -1233,7 +1245,7 @@ i32 main(
                                                       total_nodes,
                                                       // minify disable filter delete
                                                       start,
-                                                      time_left / O::Tc1,
+                                                      time_left / O::TmHardDivisor,
                                                       stop);
             stop = true;
             for (i32 i = 1; i < thread_count; ++i)
