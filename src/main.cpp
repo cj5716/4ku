@@ -1110,6 +1110,7 @@ void set_fen(Position &pos, const string &fen) {
 // minify disable filter delete
 
 #define PRINT_TUNE_OPTION(param) cout << "option name " << #param << " type spin default " << O::param << " min -32768 max 32767\n";
+#define PRINT_TUNE_INPUT(param) cout << #param << ", int, " << float(O::param) << ", 0.0, " << float(O::param * 2) << ", " << max(float(O::param / 20.0), 0.5f) << ", 0.002\n";
 #define READ_TUNE_OPTION(param) else if (word == #param) { cin >> word; cin >> O::param; }
 
 i32 main(
@@ -1131,6 +1132,29 @@ i32 main(
 
     Position pos;
     vector<u64> hash_history;
+
+    PRINT_TUNE_INPUT(TempoMg)
+    PRINT_TUNE_INPUT(TempoEg)
+    PRINT_TUNE_INPUT(IirLimit)
+    PRINT_TUNE_INPUT(RfpDepth)
+    PRINT_TUNE_INPUT(RfpMargin)
+    PRINT_TUNE_INPUT(RazorMargin)
+    PRINT_TUNE_INPUT(NmpDepthLimit)
+    PRINT_TUNE_INPUT(NmpDepthReduction)
+    PRINT_TUNE_INPUT(NmpExtraDepthDivisor)
+    PRINT_TUNE_INPUT(NmpBetaDistanceDivisor)
+    PRINT_TUNE_INPUT(NmpBetaDistanceLimit)
+    PRINT_TUNE_INPUT(DeltaMargin)
+    PRINT_TUNE_INPUT(FfpDepthLimit)
+    PRINT_TUNE_INPUT(FfpMargin)
+    PRINT_TUNE_INPUT(LmrDepthLimit)
+    PRINT_TUNE_INPUT(LmrMoveLimit)
+    PRINT_TUNE_INPUT(LmrMoveDivisor)
+    PRINT_TUNE_INPUT(LmrDepthDivisor)
+    PRINT_TUNE_INPUT(LmpMoveCount)
+    PRINT_TUNE_INPUT(AwInitial)
+    PRINT_TUNE_INPUT(TmHardDivisor)
+    PRINT_TUNE_INPUT(TmSoftDivisor)
 
     // minify enable filter delete
     // OpenBench compliance
@@ -1192,6 +1216,7 @@ i32 main(
     // Send UCI info
     cout << "id name 4ku\n";
     cout << "id author kz04px\n";
+
     // minify enable filter delete
     cout << "option name Threads type spin default " << thread_count << " min 1 max 256\n";
     cout << "option name Hash type spin default " << num_tt_entries * sizeof(TTEntry) / (1024 * 1024)
