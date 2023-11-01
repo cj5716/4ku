@@ -396,7 +396,7 @@ const i32 pawn_passed_blocked_penalty[] = {S(10, 14), S(-5, 43), S(-9, 86), S(3,
 const i32 pawn_passed_king_distance[] = {S(1, -6), S(-4, 11)};
 const i32 bishop_pair = S(31, 72);
 const i32 king_shield[] = {S(35, -12), S(28, -8)};
-const i32 pawn_attacked_penalty[] = {S(64, 14), S(155, 142)};
+const i32 pawn_attacked_penalty = S(64, 14);
 
 [[nodiscard]] i32 eval(Position &pos) {
     // Include side to move bonus
@@ -467,7 +467,7 @@ const i32 pawn_attacked_penalty[] = {S(64, 14), S(155, 142)};
                     if (piece_bb & attacked_by_pawns)
                         // If we're to move, we'll just lose some options and our tempo.
                         // If we're not to move, we lose a piece?
-                        score -= pawn_attacked_penalty[c];
+                        score -= c ? material[p] - S(150, 150) : pawn_attacked_penalty;
 
                     u64 mobility = 0;
 
