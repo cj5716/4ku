@@ -672,6 +672,7 @@ i32 alphabeta(Position &pos,
         }
 
         const Move move = moves[best_move_index];
+        const i32 move_score = move_scores[best_move_index];
         moves[best_move_index] = moves[i];
         move_scores[best_move_index] = move_scores[i];
 
@@ -715,8 +716,7 @@ i32 alphabeta(Position &pos,
             // Late move reduction
             i32 reduction = depth > 2 && num_moves_evaluated > 4 && !gain
                                 ? num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) + !improving +
-                                      (hh_table[pos.flipped][move.from][move.to] < 0) -
-                                      (hh_table[pos.flipped][move.from][move.to] > 0)
+                                      (move_score < 0) - (move_score > 0)
                                 : 0;
 
         zero_window:
