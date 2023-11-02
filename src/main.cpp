@@ -1170,7 +1170,7 @@ i32 main(
                                                       total_nodes,
                                                       // minify disable filter delete
                                                       start,
-                                                      time_left / 2,
+                                                      time_left / 3,
                                                       stop);
             stop = true;
             for (i32 i = 1; i < thread_count; ++i)
