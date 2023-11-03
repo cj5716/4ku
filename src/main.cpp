@@ -621,7 +621,7 @@ i32 alphabeta(Position &pos,
             if (-alphabeta(npos,
                            -beta,
                            -alpha,
-                           depth - 4 - depth / 6 - min((static_eval - beta) / 200, 3),
+                           depth - 4 - depth / 6 - min((static_eval - beta) / 185, 3),
                            ply + 1,
                            // minify enable filter delete
                            nodes,
@@ -683,8 +683,8 @@ i32 alphabeta(Position &pos,
             break;
 
         // Forward futility pruning
-        if (ply > 0 && depth < 8 && !in_qsearch && !in_check && num_moves_evaluated &&
-            static_eval + 100 * depth + gain < alpha)
+        if (ply > 0 && depth < 7 && !in_qsearch && !in_check && num_moves_evaluated &&
+            static_eval + 90 * depth + gain < alpha)
             break;
 
         Position npos = pos;
@@ -773,7 +773,7 @@ i32 alphabeta(Position &pos,
             }
         }
         // Late move pruning based on quiet move count
-        if (!in_check && alpha == beta - 1 && num_quiets_evaluated > 3 + depth * depth >> !improving)
+        if (!in_check && alpha == beta - 1 && num_quiets_evaluated > 2 + depth * depth >> !improving)
             break;
     }
     hash_history.pop_back();
