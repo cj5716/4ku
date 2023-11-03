@@ -851,7 +851,6 @@ auto iteratively_deepen(Position &pos,
     i32 score = 0;
     for (i32 i = 1; i < 128; ++i) {
         i32 window = 32 + (score * score >> 14);
-        i32 research = 0;
     research:
         const i32 newscore = alphabeta(pos,
                                        score - window,
@@ -904,7 +903,7 @@ auto iteratively_deepen(Position &pos,
         // minify disable filter delete
 
         if (newscore >= score + window || newscore <= score - window) {
-            window <<= ++research;
+            window *= 2;
             score = newscore;
             goto research;
         }
@@ -912,7 +911,7 @@ auto iteratively_deepen(Position &pos,
         score = newscore;
 
         // Early exit after completed ply
-        if (!research && now() >= start_time + allocated_time / 10)
+        if (now() >= start_time + allocated_time / 10)
             break;
     }
     return stack[0].move;
