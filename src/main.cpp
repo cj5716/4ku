@@ -614,7 +614,8 @@ i32 alphabeta(Position &pos,
         }
 
         // Null move pruning
-        if (depth > 2 && static_eval >= beta && do_null && pos.colour[0] & ~(pos.pieces[Pawn] | pos.pieces[King])) {
+        if (depth > 2 && static_eval >= stack[ply].score && static_eval >= beta && do_null &&
+            pos.colour[0] & ~(pos.pieces[Pawn] | pos.pieces[King])) {
             Position npos = pos;
             flip(npos);
             npos.ep = 0;
@@ -912,7 +913,7 @@ auto iteratively_deepen(Position &pos,
         score = newscore;
 
         // Early exit after completed ply
-        if (!research && now() >= start_time + allocated_time / 10)
+        if (!research && now() >= start_time + allocated_time / 15)
             break;
     }
     return stack[0].move;
@@ -1170,7 +1171,7 @@ i32 main(
                                                       total_nodes,
                                                       // minify disable filter delete
                                                       start,
-                                                      time_left / 3,
+                                                      time_left / 2,
                                                       stop);
             stop = true;
             for (i32 i = 1; i < thread_count; ++i)
