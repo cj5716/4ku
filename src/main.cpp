@@ -725,7 +725,7 @@ i32 alphabeta(Position &pos,
             // Late move reduction
             i32 reduction = depth > 2 && num_moves_evaluated > 4 && !gain
                                 ? num_moves_evaluated / 14 + depth / 17 + (alpha == beta - 1) + !improving -
-                                      min(max(hh_table[pos.flipped][move.from][move.to] / 512, -2), 2)
+                                      min(max(hh_table[pos.flipped][move.from][move.to] / 128, -2), 2)
                                 : 0;
 
         zero_window:
