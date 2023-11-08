@@ -564,7 +564,7 @@ i32 alphabeta(Position &pos,
               const int64_t stop_time,
               i32 &stop,
               Stack *const stack,
-              int64_t (&hh_table)[2][64][64],
+              i32 (&hh_table)[2][64][64],
               vector<u64> &hash_history,
               const i32 do_null = true) {
     // Don't overflow the stack
@@ -859,7 +859,7 @@ auto iteratively_deepen(Position &pos,
                         const i32 allocated_time,
                         i32 &stop) {
     Stack stack[128] = {};
-    int64_t hh_table[2][64][64] = {};
+    i32 hh_table[2][64][64] = {};
     // minify enable filter delete
     u64 nodes = 0;
     // minify disable filter delete
