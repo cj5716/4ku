@@ -655,8 +655,8 @@ i32 alphabeta(Position &pos,
         if (i == !(no_move == tt_move))
             for (i32 j = 0; j < num_moves; ++j) {
                 const i32 gain = max_material[moves[j].promo] + max_material[piece_on(pos, moves[j].to)];
-                move_scores[j] = gain                            ? gain + 1025
-                                 : moves[j] == stack[ply].killer ? 1024
+                move_scores[j] = gain                            ? gain + 2048
+                                 : moves[j] == stack[ply].killer ? 2047
                                                                  : hh_table[pos.flipped][moves[j].from][moves[j].to];
             }
 
@@ -764,12 +764,12 @@ i32 alphabeta(Position &pos,
                     tt_flag = Lower;
                     if (!gain) {
                         hh_table[pos.flipped][move.from][move.to] +=
-                            depth * depth - depth * depth * abs(hh_table[pos.flipped][move.from][move.to]) / 512;
+                            depth * depth - depth * depth * abs(hh_table[pos.flipped][move.from][move.to]) / 1024;
                         for (i32 j = 0; j < num_quiets_evaluated - 1; ++j)
                             hh_table[pos.flipped][quiets_evaluated[j].from][quiets_evaluated[j].to] -=
                                 depth * depth +
                                 depth * depth *
-                                    abs(hh_table[pos.flipped][quiets_evaluated[j].from][quiets_evaluated[j].to]) / 512;
+                                    abs(hh_table[pos.flipped][quiets_evaluated[j].from][quiets_evaluated[j].to]) / 1024;
                         stack[ply].killer = move;
                     }
                     break;
