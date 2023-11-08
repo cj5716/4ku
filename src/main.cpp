@@ -80,7 +80,7 @@ const Move no_move{};
 struct [[nodiscard]] Stack {
     Move moves[256];
     Move quiets_evaluated[256];
-    int64_t move_scores[256];
+    i32 move_scores[256];
     Move move;
     Move killer;
     i32 score;
