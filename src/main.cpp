@@ -763,9 +763,14 @@ i32 alphabeta(Position &pos,
                 if (score >= beta) {
                     tt_flag = Lower;
                     if (!gain) {
-                        hh_table[pos.flipped][move.from][move.to] += depth * depth;
+                        const int bonus = depth * depth;
+                        hh_table[pos.flipped][move.from][move.to] +=
+                            bonus - bonus * abs(hh_table[pos.flipped][move.from][move.to]) / 512;
                         for (i32 j = 0; j < num_quiets_evaluated - 1; ++j)
-                            hh_table[pos.flipped][quiets_evaluated[j].from][quiets_evaluated[j].to] -= depth * depth;
+                            hh_table[pos.flipped][quiets_evaluated[j].from][quiets_evaluated[j].to] -=
+                                bonus +
+                                bonus * abs(hh_table[pos.flipped][quiets_evaluated[j].from][quiets_evaluated[j].to]) /
+                                    512;
                         stack[ply].killer = move;
                     }
                     break;
