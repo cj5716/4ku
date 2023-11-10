@@ -489,7 +489,7 @@ const i32 pawn_attacked_penalty[] = {S(64, 14), S(155, 142)};
                     score += mobilities[p - 1] * count(mobility & ~pos.colour[0] & ~attacked_by_pawns);
 
                     // Attacks on opponent king
-                    score += king_attacks[p - 1] * count(mobility & king(kings[1], pos.colour[0] | pos.colour[1]));
+                    score += king_attacks[p - 1] * count(mobility & king(kings[1], 0));
 
                     // Open or semi-open files
                     const u64 file_bb = 0x101010101010101ULL << file;
