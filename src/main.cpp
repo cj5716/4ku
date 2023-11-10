@@ -606,8 +606,8 @@ i32 alphabeta(Position &pos,
 
     if (ply > 0 && !in_qsearch && !in_check && alpha == beta - 1) {
         // Reverse futility pruning
-        if (depth < 7) {
-            if (static_eval - 66 * (depth - improving) >= beta)
+        if (depth < 8) {
+            if (static_eval - 72 * (depth - improving) >= beta)
                 return static_eval;
 
             in_qsearch = static_eval + 256 * depth < alpha;
@@ -622,7 +622,7 @@ i32 alphabeta(Position &pos,
             if (-alphabeta(npos,
                            -beta,
                            -alpha,
-                           depth - 4 - depth / 6 - min((static_eval - beta) / 200, 3),
+                           depth - 3 - depth / 3 - min((static_eval - beta) / 200, 3),
                            ply + 1,
                            // minify enable filter delete
                            nodes,
