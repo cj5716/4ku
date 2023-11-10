@@ -682,10 +682,12 @@ i32 alphabeta(Position &pos,
         moves[best_move_index] = moves[i];
         move_scores[best_move_index] = move_scores[i];
 
+        if (move == excluded_move)
+            continue;
+
         // Material gain
         const i32 gain = max_material[move.promo] + max_material[piece_on(pos, move.to)];
         i32 new_depth = depth - 1;
-        i32 score;
 
         // Delta pruning
         if (in_qsearch && !in_check && static_eval + 50 + gain < alpha)
@@ -701,22 +703,21 @@ i32 alphabeta(Position &pos,
         if (ply > 0 && depth >= 7 && move == tt_move && excluded_move == no_move &&
             tt_entry.flag != Upper && tt_entry.depth >= depth - 3) {
             i32 singular_beta = tt_entry.score - depth;
-            score = alphabeta(pos,
-                              singular_beta - 1,
-                              singular_beta,
-                              depth / 2,
-                              ply,
-                              // minify enable filter delete
-                              nodes,
-                              // minify disable filter delete
-                              stop_time,
-                              stop,
-                              stack,
-                              hh_table,
-                              hash_history,
-                              false,
-                              move);
-            if (score < singular_beta)
+            if (alphabeta(pos,
+                          singular_beta - 1,
+                          singular_beta,
+                          depth / 2,
+                          ply,
+                          // minify enable filter delete
+                          nodes,
+                          // minify disable filter delete
+                          stop_time,
+                          stop,
+                          stack,
+                          hh_table,
+                          hash_history,
+                          false,
+                          move) < singular_beta)
                 new_depth++;
 
             // If a search at more superior bounds to beta fails high, we can conclude that
@@ -726,7 +727,8 @@ i32 alphabeta(Position &pos,
         }
 
         Position npos = pos;
-        if (move == excluded_move || !makemove(npos, move))
+        i32 score;
+        if (!makemove(npos, move))
             continue;
 
         // minify enable filter delete
