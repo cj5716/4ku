@@ -557,7 +557,8 @@ i32 alphabeta(Position &pos,
               Stack *const stack,
               int64_t (&hh_table)[2][64][64],
               vector<u64> &hash_history,
-              const i32 do_null = true) {
+              const i32 do_null = true,
+              const Move excluded_move = no_move) {
     // Don't overflow the stack
     if (ply > 127)
         return eval(pos);
@@ -579,7 +580,7 @@ i32 alphabeta(Position &pos,
     // TT Probing
     TT_Entry &tt_entry = transposition_table[tt_key % num_tt_entries];
     Move tt_move{};
-    if (tt_entry.key == tt_key) {
+    if (tt_entry.key == tt_key && excluded_move == no_move) {
         tt_move = tt_entry.move;
         if (alpha == beta - 1 && tt_entry.depth >= depth && tt_entry.flag != tt_entry.score <= alpha)
             // If tt_entry.score <= alpha, tt_entry.flag cannot be Lower (ie must be Upper or Exact).
@@ -590,13 +591,18 @@ i32 alphabeta(Position &pos,
     else
         depth -= depth > 3;
 
-    i32 static_eval = stack[ply].score = eval(pos);
-    const i32 improving = ply > 1 && static_eval > stack[ply - 2].score;
+    i32 static_eval;
+    if (excluded_move == no_move) {
+        static_eval = stack[ply].score = eval(pos);
 
-    // If static_eval > tt_entry.score, tt_entry.flag cannot be Lower (ie must be Upper or Exact).
-    // Otherwise, tt_entry.flag cannot be Upper (ie must be Lower or Exact).
-    if (tt_entry.key == tt_key && tt_entry.flag != static_eval > tt_entry.score)
-        static_eval = tt_entry.score;
+        // If static_eval > tt_entry.score, tt_entry.flag cannot be Lower (ie must be Upper or Exact).
+        // Otherwise, tt_entry.flag cannot be Upper (ie must be Lower or Exact).
+        if (tt_entry.key == tt_key && tt_entry.flag != static_eval > tt_entry.score)
+            static_eval = tt_entry.score;
+    } else
+        static_eval = stack[ply].score;
+
+    const i32 improving = ply > 1 && stack[ply].score > stack[ply - 2].score;
 
     if (in_qsearch && static_eval > alpha) {
         if (static_eval >= beta)
@@ -610,7 +616,7 @@ i32 alphabeta(Position &pos,
             if (static_eval - 66 * (depth - improving) >= beta)
                 return static_eval;
 
-            in_qsearch = static_eval + 256 * depth < alpha;
+            in_qsearch = excluded_move == no_move && static_eval + 256 * depth < alpha;
         }
 
         // Null move pruning
@@ -678,6 +684,8 @@ i32 alphabeta(Position &pos,
 
         // Material gain
         const i32 gain = max_material[move.promo] + max_material[piece_on(pos, move.to)];
+        i32 new_depth = depth - 1;
+        i32 score;
 
         // Delta pruning
         if (in_qsearch && !in_check && static_eval + 50 + gain < alpha)
@@ -688,21 +696,49 @@ i32 alphabeta(Position &pos,
             static_eval + 100 * depth + gain < alpha)
             break;
 
+        // Singular extensions. If a search excluding the TT move at lower bounds fails low, the TT move is thus
+        // "singular" (it is the only good move) and thus we search it deeper.
+        if (ply > 0 && depth >= 7 && move == tt_move && excluded_move == no_move &&
+            tt_entry.flag != Upper && tt_entry.depth >= depth - 3) {
+            i32 singular_beta = tt_entry.score - depth;
+            score = alphabeta(pos,
+                              singular_beta - 1,
+                              singular_beta,
+                              depth / 2,
+                              ply,
+                              // minify enable filter delete
+                              nodes,
+                              // minify disable filter delete
+                              stop_time,
+                              stop,
+                              stack,
+                              hh_table,
+                              hash_history,
+                              false,
+                              move);
+            if (score < singular_beta)
+                new_depth++;
+
+            // If a search at more superior bounds to beta fails high, we can conclude that
+            // multiple moves beat beta and thus return a score early.
+            else if (singular_beta >= beta)
+                return singular_beta;
+        }
+
         Position npos = pos;
-        if (!makemove(npos, move))
+        if (move == excluded_move || !makemove(npos, move))
             continue;
 
         // minify enable filter delete
         nodes++;
         // minify disable filter delete
 
-        i32 score;
         if (!num_moves_evaluated)
         full_window:
             score = -alphabeta(npos,
                                -beta,
                                -alpha,
-                               depth - 1,
+                               new_depth,
                                ply + 1,
                                // minify enable filter delete
                                nodes,
@@ -724,7 +760,7 @@ i32 alphabeta(Position &pos,
             score = -alphabeta(npos,
                                -alpha - 1,
                                -alpha,
-                               depth - reduction - 1,
+                               new_depth - reduction,
                                ply + 1,
                                // minify enable filter delete
                                nodes,
@@ -781,10 +817,11 @@ i32 alphabeta(Position &pos,
 
     // Return mate or draw scores if no moves found
     if (best_score == -inf)
-        return in_check ? ply - mate_score : 0;
+        return excluded_move == no_move ? in_check ? ply - mate_score : 0 : alpha;
 
     // Save to TT
-    tt_entry = {tt_key, best_move, best_score, in_qsearch ? 0 : depth, tt_flag};
+    if (excluded_move == no_move)
+        tt_entry = {tt_key, best_move, best_score, in_qsearch ? 0 : depth, tt_flag};
 
     return best_score;
 }
