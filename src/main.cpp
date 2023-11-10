@@ -701,22 +701,21 @@ i32 alphabeta(Position &pos,
         // Singular extensions. If a search excluding the TT move at lower bounds fails low, the TT move is thus
         // "singular" (it is the only good move) and thus we search it deeper.
         if (ply > 0 && depth >= 7 && move == tt_move && tt_entry.flag != Upper && tt_entry.depth >= depth - 3)
-            if (alphabeta(pos,
-                          tt_entry.score - depth - 1,
-                          tt_entry.score - depth,
-                          new_depth / 2,
-                          ply,
-                          // minify enable filter delete
-                          nodes,
-                          // minify disable filter delete
-                          stop_time,
-                          stop,
-                          stack,
-                          hh_table,
-                          hash_history,
-                          false,
-                          move) < tt_entry.score - depth)
-                new_depth++;
+            new_depth += alphabeta(pos,
+                                   tt_entry.score - depth - 1,
+                                   tt_entry.score - depth,
+                                   new_depth / 2,
+                                   ply,
+                                   // minify enable filter delete
+                                   nodes,
+                                   // minify disable filter delete
+                                   stop_time,
+                                   stop,
+                                   stack,
+                                   hh_table,
+                                   hash_history,
+                                   false,
+                                   move) < tt_entry.score - depth;
 
         Position npos = pos;
         i32 score;
