@@ -700,11 +700,10 @@ i32 alphabeta(Position &pos,
 
         // Singular extensions. If a search excluding the TT move at lower bounds fails low, the TT move is thus
         // "singular" (it is the only good move) and thus we search it deeper.
-        if (ply > 0 && depth >= 7 && move == tt_move && tt_entry.flag != Upper && tt_entry.depth >= depth - 3) {
-            i32 singular_beta = tt_entry.score - depth;
+        if (ply > 0 && depth >= 7 && move == tt_move && tt_entry.flag != Upper && tt_entry.depth >= depth - 3)
             if (alphabeta(pos,
-                          singular_beta - 1,
-                          singular_beta,
+                          tt_entry.score - depth - 1,
+                          tt_entry.score - depth,
                           new_depth / 2,
                           ply,
                           // minify enable filter delete
@@ -716,9 +715,8 @@ i32 alphabeta(Position &pos,
                           hh_table,
                           hash_history,
                           false,
-                          move) < singular_beta)
+                          move) < tt_entry.score - depth)
                 new_depth++;
-        }
 
         Position npos = pos;
         i32 score;
