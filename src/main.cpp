@@ -568,6 +568,7 @@ i32 alphabeta(Position &pos,
     depth += in_check;
 
     i32 in_qsearch = depth <= 0;
+    const i32 not_in_singular_search = excluded_move == no_move;
     const u64 tt_key = get_hash(pos);
 
     if (ply > 0 && !in_qsearch) {
@@ -580,7 +581,7 @@ i32 alphabeta(Position &pos,
     // TT Probing
     TT_Entry &tt_entry = transposition_table[tt_key % num_tt_entries];
     Move tt_move{};
-    if (tt_entry.key == tt_key && excluded_move == no_move) {
+    if (tt_entry.key == tt_key && not_in_singular_search) {
         tt_move = tt_entry.move;
         if (alpha == beta - 1 && tt_entry.depth >= depth && tt_entry.flag != tt_entry.score <= alpha)
             // If tt_entry.score <= alpha, tt_entry.flag cannot be Lower (ie must be Upper or Exact).
@@ -592,7 +593,7 @@ i32 alphabeta(Position &pos,
         depth -= depth > 3;
 
     i32 static_eval;
-    if (excluded_move == no_move) {
+    if (not_in_singular_search) {
         static_eval = stack[ply].score = eval(pos);
 
         // If static_eval > tt_entry.score, tt_entry.flag cannot be Lower (ie must be Upper or Exact).
@@ -616,7 +617,7 @@ i32 alphabeta(Position &pos,
             if (static_eval - 66 * (depth - improving) >= beta)
                 return static_eval;
 
-            in_qsearch = excluded_move == no_move && static_eval + 256 * depth < alpha;
+            in_qsearch = not_in_singular_search && static_eval + 256 * depth < alpha;
         }
 
         // Null move pruning
@@ -810,10 +811,10 @@ i32 alphabeta(Position &pos,
 
     // Return mate or draw scores if no moves found
     if (best_score == -inf)
-        return excluded_move == no_move ? in_check ? ply - mate_score : 0 : alpha;
+        return not_in_singular_search ? in_check ? ply - mate_score : 0 : alpha;
 
     // Save to TT
-    if (excluded_move == no_move)
+    if (not_in_singular_search)
         tt_entry = {tt_key, best_move, best_score, in_qsearch ? 0 : depth, tt_flag};
 
     return best_score;
