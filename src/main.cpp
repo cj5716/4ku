@@ -701,7 +701,7 @@ i32 alphabeta(Position &pos,
 
         // Singular extensions. If a search excluding the TT move at lower bounds fails low, the TT move is thus
         // "singular" (it is the only good move) and thus we search it deeper.
-        if (ply > 0 && depth >= 9 && move == tt_move && tt_entry.flag != Upper && tt_entry.depth >= depth - 2)
+        if (ply > 0 && depth >= 7 && move == tt_move && tt_entry.flag != Upper && tt_entry.depth >= depth - 2)
             new_depth += alphabeta(pos,
                                    tt_entry.score - depth - 1,
                                    tt_entry.score - depth,
