@@ -445,13 +445,15 @@ const i32 pawn_attacked_penalty[] = {S(64, 14), S(155, 142)};
                 if (piece_bb & protected_by_pawns)
                     score += pawn_protection[p];
 
+                const u64 ahead_bb = 0x101010101010101ULL << sq;
+
                 // Pawn threat
-                if (0x101010101010101ULL << sq & ~piece_bb & attacked_by_pawns)
+                if (ahead_bb & ~piece_bb & attacked_by_pawns)
                     score -= pawn_threat_penalty[p];
 
                 if (p == Pawn) {
                     // Passed pawns
-                    if (rank > 2 && !(0x101010101010101ULL << sq & (pawns[1] | attacked_by_pawns))) {
+                    if (rank > 2 && !(ahead_bb & (pawns[1] | attacked_by_pawns))) {
                         score += passers[rank - 3];
 
                         // Protected passed pawns
@@ -497,9 +499,8 @@ const i32 pawn_attacked_penalty[] = {S(64, 14), S(155, 142)};
                     score += king_attacks[p - 1] * count(mobility & king(kings[1], 0));
 
                     // Open or semi-open files
-                    const u64 file_bb = 0x101010101010101ULL << file;
-                    if (!(file_bb & pawns[0]))
-                        score += open_files[!(file_bb & pawns[1]) * 5 + p - 1];
+                    if (!(ahead_bb & pawns[0]))
+                        score += open_files[!(ahead_bb & pawns[1]) * 5 + p - 1];
 
                     if (p == King && piece_bb & 0xC3D7) {
                         // C3D7 = Reasonable king squares
