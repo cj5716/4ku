@@ -356,6 +356,10 @@ void generate_piece_moves(Move *const movelist,
 namespace O {
     i32 TempoMg = 28;
     i32 TempoEg = 10;
+    i32 PawnAttackedUsMg = 64;
+    i32 PawnAttackedUsEg = 14;
+    i32 PawnAttackedThemMg = 155;
+    i32 PawnAttackedThemEg = 142;
     i32 IirLimit = 3;
     i32 RfpDepth = 7;
     i32 RfpMargin = 66;
@@ -423,7 +427,7 @@ const i32 pawn_passed_blocked_penalty[] = {S(9, 14), S(-7, 43), S(-9, 85), S(4, 
 const i32 pawn_passed_king_distance[] = {S(1, -6), S(-4, 11)};
 const i32 bishop_pair = S(32, 72);
 const i32 king_shield[] = {S(36, -12), S(27, -7)};
-const i32 pawn_attacked_penalty[] = {S(64, 14), S(155, 142)};
+i32 pawn_attacked_penalty[] = {S(O::PawnAttackedUsMg, O::PawnAttackedUsEg), S(O::PawnAttackedThemMg, O::PawnAttackedThemEg)};
 
 [[nodiscard]] i32 eval(Position &pos) {
     // Include side to move bonus
@@ -885,8 +889,7 @@ auto iteratively_deepen(Position &pos,
 
     i32 score = 0;
     for (i32 i = 1; i < 128; ++i) {
-        i32 research = 0;
-        for (i32 window = O::AwInitial + (score * score >> 14); true; window <<= ++research) {
+        for (i32 window = O::AwInitial + (score * score >> 14); true; window *= 2) {
             i32 alpha = score - window;
             i32 beta = score + window;
             score = alphabeta(pos,
@@ -942,7 +945,7 @@ auto iteratively_deepen(Position &pos,
         }
 
         // Early exit after completed ply
-        if (!research && now() >= start_time + allocated_time / O::TmSoftDivisor)
+        if (now() >= start_time + allocated_time / O::TmSoftDivisor)
             break;
     }
     return stack[0].move;
@@ -1058,6 +1061,10 @@ i32 main(
 
     PRINT_TUNE_INPUT(TempoMg)
     PRINT_TUNE_INPUT(TempoEg)
+    PRINT_TUNE_INPUT(PawnAttackedUsMg)
+    PRINT_TUNE_INPUT(PawnAttackedUsEg)
+    PRINT_TUNE_INPUT(PawnAttackedThemMg)
+    PRINT_TUNE_INPUT(PawnAttackedThemEg)
     PRINT_TUNE_INPUT(IirLimit)
     PRINT_TUNE_INPUT(RfpDepth)
     PRINT_TUNE_INPUT(RfpMargin)
@@ -1146,6 +1153,10 @@ i32 main(
 
     PRINT_TUNE_OPTION(TempoMg)
     PRINT_TUNE_OPTION(TempoEg)
+    PRINT_TUNE_OPTION(PawnAttackedUsMg)
+    PRINT_TUNE_OPTION(PawnAttackedUsEg)
+    PRINT_TUNE_OPTION(PawnAttackedThemMg)
+    PRINT_TUNE_OPTION(PawnAttackedThemEg)
     PRINT_TUNE_OPTION(IirLimit)
     PRINT_TUNE_OPTION(RfpDepth)
     PRINT_TUNE_OPTION(RfpMargin)
@@ -1203,6 +1214,10 @@ i32 main(
             }
             READ_TUNE_OPTION(TempoMg)
             READ_TUNE_OPTION(TempoEg)
+            READ_TUNE_OPTION(PawnAttackedUsMg)
+            READ_TUNE_OPTION(PawnAttackedUsEg)
+            READ_TUNE_OPTION(PawnAttackedThemMg)
+            READ_TUNE_OPTION(PawnAttackedThemEg)
             READ_TUNE_OPTION(IirLimit)
             READ_TUNE_OPTION(RfpDepth)
             READ_TUNE_OPTION(RfpMargin)
