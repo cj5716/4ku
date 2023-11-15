@@ -424,6 +424,10 @@ void generate_piece_moves(Move *const movelist,
 namespace O {
     i32 TempoMg = 29;
     i32 TempoEg = 10;
+    i32 PawnAttackedUsMg = 63;
+    i32 PawnAttackedUsEg = 14;
+    i32 PawnAttackedThemMg = 156;
+    i32 PawnAttackedThemEg = 140;
     i32 IirLimit = 3;
     i32 RfpDepth = 8;
     i32 RfpMargin = 68;
@@ -491,7 +495,7 @@ const i32 pawn_passed_blocked_penalty[] = {S(9, 14), S(-7, 43), S(-9, 85), S(4, 
 const i32 pawn_passed_king_distance[] = {S(1, -6), S(-4, 11)};
 const i32 bishop_pair = S(32, 72);
 const i32 king_shield[] = {S(36, -12), S(27, -7)};
-const i32 pawn_attacked_penalty[] = {S(63, 14), S(156, 140)};
+i32 pawn_attacked_penalty[] = {S(O::PawnAttackedUsMg, O::PawnAttackedUsEg), S(O::PawnAttackedThemMg, O::PawnAttackedThemEg)};
 
 [[nodiscard]] i32 eval(Position &pos) {
     // Include side to move bonus
@@ -1135,6 +1139,10 @@ i32 main(
 
     PRINT_TUNE_INPUT(TempoMg)
     PRINT_TUNE_INPUT(TempoEg)
+    PRINT_TUNE_INPUT(PawnAttackedUsMg)
+    PRINT_TUNE_INPUT(PawnAttackedUsEg)
+    PRINT_TUNE_INPUT(PawnAttackedThemMg)
+    PRINT_TUNE_INPUT(PawnAttackedThemEg)
     PRINT_TUNE_INPUT(IirLimit)
     PRINT_TUNE_INPUT(RfpDepth)
     PRINT_TUNE_INPUT(RfpMargin)
@@ -1224,6 +1232,10 @@ i32 main(
 
     PRINT_TUNE_OPTION(TempoMg)
     PRINT_TUNE_OPTION(TempoEg)
+    PRINT_TUNE_OPTION(PawnAttackedUsMg)
+    PRINT_TUNE_OPTION(PawnAttackedUsEg)
+    PRINT_TUNE_OPTION(PawnAttackedThemMg)
+    PRINT_TUNE_OPTION(PawnAttackedThemEg)
     PRINT_TUNE_OPTION(IirLimit)
     PRINT_TUNE_OPTION(RfpDepth)
     PRINT_TUNE_OPTION(RfpMargin)
@@ -1282,6 +1294,10 @@ i32 main(
             }
             READ_TUNE_OPTION(TempoMg)
             READ_TUNE_OPTION(TempoEg)
+            READ_TUNE_OPTION(PawnAttackedUsMg)
+            READ_TUNE_OPTION(PawnAttackedUsEg)
+            READ_TUNE_OPTION(PawnAttackedThemMg)
+            READ_TUNE_OPTION(PawnAttackedThemEg)
             READ_TUNE_OPTION(IirLimit)
             READ_TUNE_OPTION(RfpDepth)
             READ_TUNE_OPTION(RfpMargin)
