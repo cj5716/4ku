@@ -859,6 +859,7 @@ auto iteratively_deepen(Position &pos,
     // minify disable filter delete
 
     i32 score = 0;
+    i32 research = 0;
     for (i32 i = 1; i < 128; ++i) {
         for (i32 window = 29 + (score * score >> 14); true; window *= 2) {
             i32 alpha = score - window;
@@ -913,10 +914,12 @@ auto iteratively_deepen(Position &pos,
 
             if (score > alpha && score < beta)
                 break;
+
+            research++;
         }
 
         // Early exit after completed ply
-        if (now() >= start_time + allocated_time / 10)
+        if (!research && now() >= start_time + allocated_time / 10)
             break;
     }
     return stack[0].move;
