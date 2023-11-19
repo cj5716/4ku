@@ -32,8 +32,8 @@
 
 using namespace std;
 
-using u8 = uint8_t;
 using i32 = int;
+using u8 = uint8_t;
 using u64 = uint64_t;
 
 // Constants
