@@ -633,7 +633,7 @@ i32 alphabeta(Position &pos,
             if (-alphabeta(npos,
                            -beta,
                            -alpha,
-                           depth - 4 - depth / 5 - min((static_eval - beta) / 200, 3),
+                           depth - 3 - depth / 3 - min((static_eval - beta) / 200, 3),
                            ply + 1,
                            // minify enable filter delete
                            nodes,
@@ -863,7 +863,7 @@ auto iteratively_deepen(Position &pos,
     i32 score = 0;
     for (i32 i = 1; i < 128; ++i) {
         i32 research = 0;
-        for (i32 window = 29 + (score * score >> 14); ++research; window *= 2) {
+        for (i32 window = 14 + (score * score >> 15); window *= 2; ++research) {
             i32 alpha = score - window;
             i32 beta = score + window;
             score = alphabeta(pos,
@@ -919,7 +919,7 @@ auto iteratively_deepen(Position &pos,
         }
 
         // Early exit after completed ply
-        if (2 > research && now() >= start_time + allocated_time / 10)
+        if (!research && now() >= start_time + allocated_time / 10)
             break;
     }
     return stack[0].move;
