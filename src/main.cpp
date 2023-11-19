@@ -863,7 +863,8 @@ auto iteratively_deepen(Position &pos,
     i32 score = 0;
     for (i32 i = 1; i < 128; ++i) {
         i32 research = 0;
-        for (i32 window = 32 + (score * score >> 14); true; window <<= ++research) {
+        for (i32 window = 32 + (score * score >> 14); research || now() < start_time + allocated_time / 10;
+             window <<= ++research) {
             i32 alpha = score - window;
             i32 beta = score + window;
             score = alphabeta(pos,
@@ -882,7 +883,7 @@ auto iteratively_deepen(Position &pos,
 
             // Hard time limit exceeded
             if (stop || now() >= start_time + allocated_time)
-                return stack[0].move;
+                research = 0;
 
             // minify enable filter delete
             // The main search thread prints with every iteration normally, or when the target depth has finished when
@@ -917,10 +918,6 @@ auto iteratively_deepen(Position &pos,
             if (score > alpha && score < beta)
                 break;
         }
-
-        // Early exit after completed ply
-        if (!research && now() >= start_time + allocated_time / 10)
-            break;
     }
     return stack[0].move;
 }
