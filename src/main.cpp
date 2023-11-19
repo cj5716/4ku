@@ -633,7 +633,7 @@ i32 alphabeta(Position &pos,
             if (-alphabeta(npos,
                            -beta,
                            -alpha,
-                           depth - 3 - depth / 3 - min((static_eval - beta) / 200, 3),
+                           depth - 4 - depth / 5 - min((static_eval - beta) / 200, 3),
                            ply + 1,
                            // minify enable filter delete
                            nodes,
@@ -863,7 +863,7 @@ auto iteratively_deepen(Position &pos,
     i32 score = 0;
     for (i32 i = 1; i < 128; ++i) {
         i32 research = 0;
-        for (i32 window = 14 + (score * score >> 15); window *= 2; ++research) {
+        for (i32 window = 12 + (score * score >> 15); window *= 2; ++research) {
             i32 alpha = score - window;
             i32 beta = score + window;
             score = alphabeta(pos,
