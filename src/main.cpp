@@ -918,7 +918,7 @@ auto iteratively_deepen(Position &pos,
         }
 
         // Early exit after completed ply
-        if (now() >= start_time + allocated_time / 10)
+        if (now() >= start_time + allocated_time / 5)
             break;
     }
     return stack[0].move;
@@ -1177,7 +1177,7 @@ i32 main(
                                                       total_nodes,
                                                       // minify disable filter delete
                                                       start,
-                                                      time_left / 3,
+                                                      time_left / 8,
                                                       stop);
             stop = true;
             for (i32 i = 1; i < thread_count; ++i)
