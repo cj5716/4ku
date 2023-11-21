@@ -596,6 +596,9 @@ i32 alphabeta(Position &pos,
             // If tt_entry.score < beta, tt_entry.flag cannot be Lower (ie must be Upper or Exact).
             // Otherwise, tt_entry.flag cannot be Upper (ie must be Lower or Exact).
             return tt_entry.score;
+
+        if (alpha != beta - 1 && tt_entry.depth >= depth && depth >= 7 && tt_move == no_move)
+            depth--;
     }
     // Internal iterative reduction
     else
