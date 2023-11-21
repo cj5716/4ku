@@ -598,6 +598,8 @@ i32 alphabeta(Position &pos,
                 // Otherwise, tt_entry.flag cannot be Upper (ie must be Lower or Exact).
                 return tt_entry.score;
 
+            // If we have searched this PV node at superior or equal depth but it failed low,
+            // it is likely that we will also fail low here, and thus we decrease depth.
             if (alpha != beta - 1 && depth >= 7 && tt_move == no_move)
                 depth--;
         }
