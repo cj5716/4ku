@@ -446,8 +446,10 @@ namespace O {
     i32 LmrDepthDivisor = 15;
     i32 LmpMoveCount = 2;
     i32 AwInitial = 29;
-    i32 TmHardDivisor = 3;
-    i32 TmSoftDivisor = 10;
+    i32 AspMinDepth = 3;
+    i32 AspWidening = 200;
+    i32 TmHardDivisor = 333;
+    i32 TmSoftDivisor = 100;
 }
 
 const i32 phases[] = {0, 1, 1, 2, 4, 0};
@@ -967,9 +969,9 @@ auto iteratively_deepen(Position &pos,
     i32 score = 0;
     for (i32 i = 1; i < 128; ++i) {
         i32 research = 0;
-        for (i32 window = O::AwInitial + (score * score >> 14); ++research; window *= 2) {
-            i32 alpha = score - window;
-            i32 beta = score + window;
+        for (i32 window = O::AwInitial + (score * score >> 14); ++research; window *= O::AspWidening / 100.0) {
+            i32 alpha = i > O::AspMinDepth ? score - window : -inf;
+            i32 beta = i > O::AspMinDepth ? score + window : inf;
             score = alphabeta(pos,
                               alpha,
                               beta,
@@ -1023,7 +1025,7 @@ auto iteratively_deepen(Position &pos,
         }
 
         // Early exit after completed ply
-        if (2 > research && now() >= start_time + allocated_time / O::TmSoftDivisor)
+        if (2 > research && now() >= start_time + allocated_time * O::TmSoftDivisor / 1000)
             break;
     }
     return stack[0].move;
@@ -1161,6 +1163,8 @@ i32 main(
     PRINT_TUNE_INPUT(LmrDepthDivisor)
     PRINT_TUNE_INPUT(LmpMoveCount)
     PRINT_TUNE_INPUT(AwInitial)
+    PRINT_TUNE_INPUT(AspMinDepth)
+    PRINT_TUNE_INPUT(AspWidening)
     PRINT_TUNE_INPUT(TmHardDivisor)
     PRINT_TUNE_INPUT(TmSoftDivisor)
 
@@ -1203,7 +1207,7 @@ i32 main(
         for (const auto &[fen, depth] : bench_positions) {
             i32 stop = false;
             set_fen(pos, fen);
-            iteratively_deepen(pos, hash_history, 0, depth, total_nodes, now(), 1 << 30, stop);
+            iteratively_deepen(pos, hash_history, 0, depth, total_nodes, now(), 1 << 20, stop);
         }
         const u64 elapsed = now() - start_time;
 
@@ -1254,6 +1258,8 @@ i32 main(
     PRINT_TUNE_OPTION(LmrDepthDivisor)
     PRINT_TUNE_OPTION(LmpMoveCount)
     PRINT_TUNE_OPTION(AwInitial)
+    PRINT_TUNE_OPTION(AspMinDepth)
+    PRINT_TUNE_OPTION(AspWidening)
     PRINT_TUNE_OPTION(TmHardDivisor)
     PRINT_TUNE_OPTION(TmSoftDivisor)
 
@@ -1316,6 +1322,8 @@ i32 main(
             READ_TUNE_OPTION(LmrDepthDivisor)
             READ_TUNE_OPTION(LmpMoveCount)
             READ_TUNE_OPTION(AwInitial)
+            READ_TUNE_OPTION(AspMinDepth)
+            READ_TUNE_OPTION(AspWidening)
             READ_TUNE_OPTION(TmHardDivisor)
             READ_TUNE_OPTION(TmSoftDivisor)
         }
@@ -1370,7 +1378,7 @@ i32 main(
                                                       total_nodes,
                                                       // minify disable filter delete
                                                       start,
-                                                      time_left / O::TmHardDivisor,
+                                                      time_left * O::TmHardDivisor / 1000,
                                                       stop);
             stop = true;
             for (i32 i = 1; i < thread_count; ++i)
