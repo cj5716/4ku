@@ -800,11 +800,13 @@ i32 alphabeta(Position &pos,
                                hash_history);
         else {
             // Late move reduction
-            i32 reduction = depth > 2 && num_moves_evaluated > 4 && !gain
-                                ? num_moves_evaluated / 13 + depth / 15 + (alpha == beta - 1) + !improving -
-                                      (move == stack[ply].killer) + (hh_table[pos.flipped][move.from][move.to] < 0) -
-                                      (hh_table[pos.flipped][move.from][move.to] > 0)
-                                : 0;
+            i32 reduction =
+                depth > 2 && num_moves_evaluated > 4 && !gain
+                    ? max(num_moves_evaluated / 13 + depth / 15 + (alpha == beta - 1) + !improving -
+                              (move == stack[ply].killer) + (hh_table[pos.flipped][move.from][move.to] < 0) -
+                              (hh_table[pos.flipped][move.from][move.to] > 0),
+                          0)
+                    : 0;
 
         zero_window:
             score = -alphabeta(npos,
