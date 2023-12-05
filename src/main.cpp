@@ -727,7 +727,6 @@ i32 alphabeta(Position &pos,
     u8 tt_flag = Upper;
 
     i32 num_moves_evaluated = 0;
-    i32 num_quiets_evaluated = 0;
     i32 best_score = in_qsearch ? static_eval : -inf;
     auto best_move = tt_move;
 
@@ -865,11 +864,9 @@ i32 alphabeta(Position &pos,
         }
 
         moves_evaluated[num_moves_evaluated++] = move;
-        if (!gain)
-            num_quiets_evaluated++;
 
         // Late move pruning based on quiet move count
-        if (!in_check && alpha == beta - 1 && num_quiets_evaluated > 2 + depth * depth >> !improving)
+        if (!in_check && alpha == beta - 1 && !gain && num_moves_evaluated > 5 + depth * depth >> !improving)
             break;
     }
     hash_history.pop_back();
