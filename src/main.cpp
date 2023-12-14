@@ -427,6 +427,7 @@ namespace O {
     i32 IirLimit = 3;
     i32 RfpDepth = 8;
     i32 RfpMargin = 68;
+    i32 RazorDepth = 8;
     i32 RazorMargin = 256;
     i32 NmpDepthLimit = 2;
     i32 NmpDepthReduction = 4;
@@ -719,9 +720,9 @@ i32 alphabeta(Position &pos,
         if (depth < O::RfpDepth) {
             if (static_eval - O::RfpMargin * (depth - improving) >= beta)
                 return static_eval;
-
-            in_qsearch = static_eval + O::RazorMargin * depth < alpha;
         }
+
+        in_qsearch = depth < O::RazorDepth && static_eval + O::RazorMargin * depth < alpha;
 
         // Null move pruning
         if (depth > O::NmpDepthLimit && static_eval >= beta && static_eval >= stack[ply].score && do_null &&
@@ -1148,6 +1149,7 @@ i32 main(
     PRINT_TUNE_INPUT(IirLimit)
     PRINT_TUNE_INPUT(RfpDepth)
     PRINT_TUNE_INPUT(RfpMargin)
+    PRINT_TUNE_INPUT(RazorDepth)
     PRINT_TUNE_INPUT(RazorMargin)
     PRINT_TUNE_INPUT(NmpDepthLimit)
     PRINT_TUNE_INPUT(NmpDepthReduction)
@@ -1237,6 +1239,7 @@ i32 main(
     PRINT_TUNE_OPTION(IirLimit)
     PRINT_TUNE_OPTION(RfpDepth)
     PRINT_TUNE_OPTION(RfpMargin)
+    PRINT_TUNE_OPTION(RazorDepth)
     PRINT_TUNE_OPTION(RazorMargin)
     PRINT_TUNE_OPTION(NmpDepthLimit)
     PRINT_TUNE_OPTION(NmpDepthReduction)
@@ -1296,6 +1299,7 @@ i32 main(
             READ_TUNE_OPTION(IirLimit)
             READ_TUNE_OPTION(RfpDepth)
             READ_TUNE_OPTION(RfpMargin)
+            READ_TUNE_OPTION(RazorDepth)
             READ_TUNE_OPTION(RazorMargin)
             READ_TUNE_OPTION(NmpDepthLimit)
             READ_TUNE_OPTION(NmpDepthReduction)
