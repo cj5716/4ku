@@ -434,6 +434,7 @@ namespace O {
     i32 NmpExtraDepthDivisor = 5;
     i32 NmpBetaDistanceDivisor = 200;
     i32 NmpBetaDistanceLimit = 3;
+    i32 MoveOrderingMargin = 2048;
     i32 DeltaMargin = 48;
     i32 FfpDepthLimit = 8;
     i32 FfpMargin = 104;
@@ -769,7 +770,7 @@ i32 alphabeta(Position &pos,
             for (i32 j = 0; j < num_moves; ++j) {
                 const i32 gain = max_material[moves[j].promo] + max_material[piece_on(pos, moves[j].to)];
                 move_scores[j] = hh_table[pos.flipped][!gain][moves[j].from][moves[j].to] +
-                                 (gain || moves[j] == stack[ply].killer) * 2048 + gain;
+                                 (gain || moves[j] == stack[ply].killer) * O::MoveOrderingMargin + gain;
             }
 
         // Find best move remaining
@@ -1156,6 +1157,7 @@ i32 main(
     PRINT_TUNE_INPUT(NmpExtraDepthDivisor)
     PRINT_TUNE_INPUT(NmpBetaDistanceDivisor)
     PRINT_TUNE_INPUT(NmpBetaDistanceLimit)
+    PRINT_TUNE_INPUT(MoveOrderingMargin)
     PRINT_TUNE_INPUT(DeltaMargin)
     PRINT_TUNE_INPUT(FfpDepthLimit)
     PRINT_TUNE_INPUT(FfpMargin)
@@ -1246,6 +1248,7 @@ i32 main(
     PRINT_TUNE_OPTION(NmpExtraDepthDivisor)
     PRINT_TUNE_OPTION(NmpBetaDistanceDivisor)
     PRINT_TUNE_OPTION(NmpBetaDistanceLimit)
+    PRINT_TUNE_OPTION(MoveOrderingMargin)
     PRINT_TUNE_OPTION(DeltaMargin)
     PRINT_TUNE_OPTION(FfpDepthLimit)
     PRINT_TUNE_OPTION(FfpMargin)
@@ -1306,6 +1309,7 @@ i32 main(
             READ_TUNE_OPTION(NmpExtraDepthDivisor)
             READ_TUNE_OPTION(NmpBetaDistanceDivisor)
             READ_TUNE_OPTION(NmpBetaDistanceLimit)
+            READ_TUNE_OPTION(MoveOrderingMargin)
             READ_TUNE_OPTION(DeltaMargin)
             READ_TUNE_OPTION(FfpDepthLimit)
             READ_TUNE_OPTION(FfpMargin)
