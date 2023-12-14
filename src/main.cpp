@@ -440,10 +440,10 @@ namespace O {
     i32 LmrMoveLimit = 4;
     i32 LmrMoveDivisor = 13;
     i32 LmrDepthDivisor = 15;
+    i32 LmrHistDivisor = 128;
+    i32 MaxHist = 512;
     i32 LmpMoveCount = 2;
     i32 AwInitial = 29;
-    i32 TmHardDivisor = 3;
-    i32 TmSoftDivisor = 10;
 }
 
 const i32 phases[] = {0, 1, 1, 2, 4, 0};
@@ -824,9 +824,9 @@ i32 alphabeta(Position &pos,
                                hh_table);
         else {
             // Late move reduction
-            i32 reduction = depth > O::LmrDepthLimit && num_moves_evaluated > O::LmrMoveLimit && !gain
+            i32 reduction = depth > O::LmrDepthLimit && num_moves_evaluated > O::LmrMoveLimit
                                 ? max(num_moves_evaluated / O::LmrMoveDivisor + depth / O::LmrDepthDivisor + (alpha == beta - 1) + !improving -
-                                          min(max(hh_table[pos.flipped][!gain][move.from][move.to] / 128, -2), 2),
+                                          min(max(hh_table[pos.flipped][!gain][move.from][move.to] / O::LmrHistDivisor, -2), 2),
                                       0)
                                 : 0;
 
@@ -876,14 +876,14 @@ i32 alphabeta(Position &pos,
                     stack[ply].killer = move;
 
                 hh_table[pos.flipped][!gain][move.from][move.to] +=
-                    depth * depth - depth * depth * hh_table[pos.flipped][!gain][move.from][move.to] / 512;
+                    depth * depth - depth * depth * hh_table[pos.flipped][!gain][move.from][move.to] / O::MaxHist;
                 for (i32 j = 0; j < num_moves_evaluated; ++j) {
                     const i32 prev_gain =
                         max_material[moves_evaluated[j].promo] + max_material[piece_on(pos, moves_evaluated[j].to)];
                     hh_table[pos.flipped][!prev_gain][moves_evaluated[j].from][moves_evaluated[j].to] -=
                         depth * depth +
                         depth * depth *
-                            hh_table[pos.flipped][!prev_gain][moves_evaluated[j].from][moves_evaluated[j].to] / 512;
+                            hh_table[pos.flipped][!prev_gain][moves_evaluated[j].from][moves_evaluated[j].to] / O::MaxHist;
                 }
                 break;
             }
@@ -1163,8 +1163,8 @@ i32 main(
     PRINT_TUNE_INPUT(LmrDepthDivisor)
     PRINT_TUNE_INPUT(LmpMoveCount)
     PRINT_TUNE_INPUT(AwInitial)
-    PRINT_TUNE_INPUT(TmHardDivisor)
-    PRINT_TUNE_INPUT(TmSoftDivisor)
+    PRINT_TUNE_INPUT(LmrHistDivisor)
+    PRINT_TUNE_INPUT(MaxHist)
 
     // minify enable filter delete
     // OpenBench compliance
@@ -1252,8 +1252,8 @@ i32 main(
     PRINT_TUNE_OPTION(LmrDepthDivisor)
     PRINT_TUNE_OPTION(LmpMoveCount)
     PRINT_TUNE_OPTION(AwInitial)
-    PRINT_TUNE_OPTION(TmHardDivisor)
-    PRINT_TUNE_OPTION(TmSoftDivisor)
+    PRINT_TUNE_OPTION(LmrHistDivisor)
+    PRINT_TUNE_OPTION(MaxHist)
 
     // minify disable filter delete
     cout << "uciok\n";
@@ -1311,8 +1311,8 @@ i32 main(
             READ_TUNE_OPTION(LmrDepthDivisor)
             READ_TUNE_OPTION(LmpMoveCount)
             READ_TUNE_OPTION(AwInitial)
-            READ_TUNE_OPTION(TmHardDivisor)
-            READ_TUNE_OPTION(TmSoftDivisor)
+            READ_TUNE_OPTION(LmrHistDivisor)
+            READ_TUNE_OPTION(MaxHist)
         }
         
         // minify disable filter delete
