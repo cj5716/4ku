@@ -434,7 +434,7 @@ namespace O {
     i32 NmpExtraDepthDivisor = 5;
     i32 NmpBetaDistanceDivisor = 200;
     i32 NmpBetaDistanceLimit = 3;
-    i32 MoveOrderingMargin = 2048;
+    i32 MoveOrderingMargin = 1024;
     i32 DeltaMargin = 48;
     i32 FfpDepthLimit = 8;
     i32 FfpMargin = 104;
