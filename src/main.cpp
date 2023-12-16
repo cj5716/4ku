@@ -470,7 +470,7 @@ const i32 pawn_attacked_penalty[] = {S(63, 14), S(156, 140)};
 
 [[nodiscard]] i32 eval(Position &pos) {
     // Include side to move bonus
-    i32 score = S(29, 10);
+    i32 score = S(27, 11);
     i32 phase = 0;
 
     for (i32 c = 0; c < 2; ++c) {
@@ -691,12 +691,12 @@ i32 alphabeta(Position &pos,
 
     if (ply > 0 && !in_qsearch && !in_check && alpha == beta - 1) {
         // Reverse futility pruning
-        if (depth < 8) {
+        if (depth < 9) {
             assert(ply > 0);
             if (static_eval - 69 * (depth - improving) >= beta)
                 return static_eval;
 
-            in_qsearch = static_eval + 241 * depth < alpha;
+            in_qsearch = depth < 8 && static_eval + 238 * depth < alpha;
         }
 
         // Null move pruning
@@ -709,7 +709,7 @@ i32 alphabeta(Position &pos,
             if (-alphabeta(npos,
                            -beta,
                            -alpha,
-                           depth - 4 - depth / 5 - min((static_eval - beta) / 208, 3),
+                           depth - 4 - depth / 5 - min((static_eval - beta) / 195, 3),
                            ply + 1,
                            // minify enable filter delete
                            nodes,
@@ -744,7 +744,7 @@ i32 alphabeta(Position &pos,
             for (i32 j = 0; j < num_moves; ++j) {
                 const i32 gain = max_material[moves[j].promo] + max_material[piece_on(pos, moves[j].to)];
                 move_scores[j] = hh_table[pos.flipped][!gain][moves[j].from][moves[j].to] +
-                                 (gain || moves[j] == stack[ply].killer) * 2048 + gain;
+                                 (gain || moves[j] == stack[ply].killer) * 1009 + gain;
             }
 
         // Find best move remaining
@@ -766,12 +766,12 @@ i32 alphabeta(Position &pos,
         const i32 gain = max_material[move.promo] + max_material[piece_on(pos, move.to)];
 
         // Delta pruning
-        if (in_qsearch && !in_check && static_eval + 48 + gain < alpha)
+        if (in_qsearch && !in_check && static_eval + 50 + gain < alpha)
             break;
 
         // Forward futility pruning
         if (ply > 0 && depth < 8 && !in_qsearch && !in_check && num_moves_evaluated &&
-            static_eval + 104 * depth + gain < alpha)
+            static_eval + 106 * depth + gain < alpha)
             break;
 
         Position npos = pos;
@@ -800,7 +800,7 @@ i32 alphabeta(Position &pos,
                                hh_table);
         else {
             // Late move reduction
-            i32 reduction = depth > 3 && num_moves_evaluated > 2
+            i32 reduction = depth > 3 && num_moves_evaluated > 1
                                 ? max(num_moves_evaluated / 13 + depth / 14 + (alpha == beta - 1) + !improving -
                                           min(max(hh_table[pos.flipped][!gain][move.from][move.to] / 128, -2), 2),
                                       0)
@@ -852,14 +852,14 @@ i32 alphabeta(Position &pos,
                     stack[ply].killer = move;
 
                 hh_table[pos.flipped][!gain][move.from][move.to] +=
-                    depth * depth - depth * depth * hh_table[pos.flipped][!gain][move.from][move.to] / 512;
+                    depth * depth - depth * depth * hh_table[pos.flipped][!gain][move.from][move.to] / 500;
                 for (i32 j = 0; j < num_moves_evaluated; ++j) {
                     const i32 prev_gain =
                         max_material[moves_evaluated[j].promo] + max_material[piece_on(pos, moves_evaluated[j].to)];
                     hh_table[pos.flipped][!prev_gain][moves_evaluated[j].from][moves_evaluated[j].to] -=
                         depth * depth +
                         depth * depth *
-                            hh_table[pos.flipped][!prev_gain][moves_evaluated[j].from][moves_evaluated[j].to] / 512;
+                            hh_table[pos.flipped][!prev_gain][moves_evaluated[j].from][moves_evaluated[j].to] / 500;
                 }
                 break;
             }
@@ -870,7 +870,7 @@ i32 alphabeta(Position &pos,
             num_quiets_evaluated++;
 
         // Late move pruning based on quiet move count
-        if (!in_check && alpha == beta - 1 && num_quiets_evaluated > 2 + depth * depth >> !improving)
+        if (!in_check && alpha == beta - 1 && num_quiets_evaluated > 1 + depth * depth >> !improving)
             break;
     }
     hash_history.pop_back();
