@@ -778,6 +778,8 @@ i32 alphabeta(Position &pos,
         if (!makemove(npos, move))
             continue;
 
+        __builtin_prefetch(get_hash(npos));
+
         // minify enable filter delete
         nodes++;
         // minify disable filter delete
