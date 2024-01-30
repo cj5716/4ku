@@ -625,6 +625,7 @@ const i32 pawn_attacked_penalty[] = {S(63, 14), S(156, 140)};
 }
 
 i32 alphabeta(Position &pos,
+              const i32 is_mainthread,
               i32 alpha,
               const i32 beta,
               i32 depth,
@@ -707,6 +708,7 @@ i32 alphabeta(Position &pos,
             flip(npos);
             npos.ep = 0;
             if (-alphabeta(npos,
+                           is_mainthread,
                            -beta,
                            -alpha,
                            depth - 4 - depth / 5 - min((static_eval - beta) / 196, 3),
@@ -786,6 +788,7 @@ i32 alphabeta(Position &pos,
         if (!num_moves_evaluated)
         full_window:
             score = -alphabeta(npos,
+                               is_mainthread,
                                -beta,
                                -alpha,
                                depth - 1,
@@ -809,6 +812,7 @@ i32 alphabeta(Position &pos,
         zero_window:
             assert(reduction >= 0);
             score = -alphabeta(npos,
+                               is_mainthread,
                                -alpha - 1,
                                -alpha,
                                depth - reduction - 1,
@@ -832,7 +836,7 @@ i32 alphabeta(Position &pos,
         }
 
         // Exit early if out of time
-        if (depth > 4 && (stop || now() >= stop_time)) {
+        if (is_mainthread && depth > 4 && (stop || now() >= stop_time)) {
             hash_history.pop_back();
             return 0;
         }
@@ -930,11 +934,11 @@ void print_pv(const Position &pos, const Move move, vector<u64> &hash_history) {
 // minify disable filter delete
 
 auto iteratively_deepen(Position &pos,
+                        i32 is_mainthread,
                         i32 &stop,
                         vector<u64> &hash_history,
                         i32 (&hh_table)[2][2][64][64],
                         // minify enable filter delete
-                        i32 thread_id,
                         const i32 bench_depth,
                         u64 &total_nodes,
                         // minify disable filter delete
@@ -952,6 +956,7 @@ auto iteratively_deepen(Position &pos,
             const i32 alpha = score - window;
             const i32 beta = score + window;
             score = alphabeta(pos,
+                              is_mainthread,
                               alpha,
                               beta,
                               i,
@@ -972,7 +977,7 @@ auto iteratively_deepen(Position &pos,
             // minify enable filter delete
             // The main search thread prints with every iteration normally, or when the target depth has finished when
             // benchmarking
-            if (thread_id == 0 && (bench_depth == 0 || i == bench_depth && alpha < score && score < beta)) {
+            if (is_mainthread && (bench_depth == 0 || i == bench_depth && alpha < score && score < beta)) {
                 const u64 elapsed = now() - start_time;
                 cout << "info";
                 cout << " depth " << i;
@@ -1004,7 +1009,7 @@ auto iteratively_deepen(Position &pos,
         }
 
         // Early exit after completed ply
-        if (2 > research && now() >= start_time + allocated_time / 10)
+        if (is_mainthread && 2 > research && now() >= start_time + allocated_time / 10)
             break;
     }
     return stack[0].move;
@@ -1154,7 +1159,7 @@ i32 main(
         for (const auto &[fen, depth] : bench_positions) {
             i32 stop = false;
             set_fen(pos, fen);
-            iteratively_deepen(pos, stop, hash_history, hh_table, 0, depth, total_nodes, 1 << 30, now());
+            iteratively_deepen(pos, true, stop, hash_history, hh_table, depth, total_nodes, 1 << 30, now());
         }
         const u64 elapsed = now() - start_time;
 
@@ -1248,11 +1253,11 @@ i32 main(
             for (i32 i = 1; i < thread_count; ++i)
                 threads.emplace_back([=, &stop]() mutable {
                     iteratively_deepen(pos,
+                                       false,
                                        stop,
                                        hash_history,
                                        hh_table,
                                        // minify enable filter delete
-                                       i,
                                        0,
                                        total_nodes,
                                        // minify disable filter delete
@@ -1260,11 +1265,11 @@ i32 main(
                                        start);
                 });
             const Move best_move = iteratively_deepen(pos,
+                                                      true,
                                                       stop,
                                                       hash_history,
                                                       hh_table,
                                                       // minify enable filter delete
-                                                      0,
                                                       0,
                                                       total_nodes,
                                                       // minify disable filter delete
