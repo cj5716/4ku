@@ -836,7 +836,7 @@ i32 alphabeta(Position &pos,
         }
 
         // Exit early if out of time
-        if (is_mainthread && depth > 4 && (stop || now() >= stop_time)) {
+        if (depth > 4 && (stop || is_mainthread && now() >= stop_time)) {
             hash_history.pop_back();
             return 0;
         }
@@ -971,7 +971,7 @@ auto iteratively_deepen(Position &pos,
                               hh_table);
 
             // Hard time limit exceeded
-            if (stop || now() >= start_time + allocated_time)
+            if (stop || is_mainthread && now() >= start_time + allocated_time)
                 return stack[0].move;
 
             // minify enable filter delete
