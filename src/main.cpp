@@ -696,7 +696,7 @@ i32 alphabeta(Position &pos,
             if (static_eval - 71 * (depth - improving) >= beta)
                 return static_eval;
 
-            if (static_eval + 238 * depth < alpha)
+            if (static_eval + 342 * depth < alpha)
                 return alphabeta(pos,
                                  alpha,
                                  beta,
