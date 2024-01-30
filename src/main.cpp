@@ -696,7 +696,20 @@ i32 alphabeta(Position &pos,
             if (static_eval - 71 * (depth - improving) >= beta)
                 return static_eval;
 
-            in_qsearch = static_eval + 238 * depth < alpha;
+            if (static_eval + 238 * depth < alpha)
+                return alphabeta(pos,
+                                 alpha,
+                                 beta,
+                                 0,
+                                 ply,
+                                 // minify enable filter delete
+                                 nodes,
+                                 // minify diable filter delete
+                                 stop_time,
+                                 stack,
+                                 stop,
+                                 hash_history,
+                                 hh_table);
         }
 
         // Null move pruning
