@@ -422,7 +422,7 @@ void generate_piece_moves(Move *const movelist,
 }
 
 const i32 phases[] = {0, 1, 1, 2, 4, 0};
-const i32 max_material[] = {122, 397, 399, 736, 1319, 0, 0};
+const i32 max_material[] = {149, 523, 525, 959, 1778, 0, 0};
 const i32 material[] = {S(95, 122), S(378, 397), S(390, 399), S(534, 736), S(1213, 1319), 0};
 const i32 pst_rank[] = {
     0,         S(-3, 0),  S(-3, -1), S(-1, -1), S(1, 0),  S(5, 2),  0,        0,          // Pawn
