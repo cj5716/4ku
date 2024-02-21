@@ -1001,6 +1001,9 @@ auto iteratively_deepen(Position &pos,
 
             if (score > alpha && score < beta)
                 break;
+
+            // Bias the widened window depending on if we failed high/low
+            score = (score + alpha + beta) / 3;
         }
 
         // Early exit after completed ply
