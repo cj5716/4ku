@@ -1004,7 +1004,7 @@ auto iteratively_deepen(Position &pos,
         }
 
         // Early exit after completed ply
-        if (4 > research && now() >= start_time + allocated_time * (2 * research - 1) / 10)
+        if (now() >= start_time + allocated_time * (2 * research - 1) / 10)
             break;
     }
     return stack[0].move;
