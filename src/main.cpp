@@ -775,8 +775,7 @@ i32 alphabeta(i32 alpha,
             static_eval + 105 * depth + gain < alpha)
             break;
 
-        stack[ply + 1].pos = pos;
-        if (!makemove(stack[ply + 1].pos, move))
+        if (!makemove(stack[ply + 1].pos = pos, move))
             continue;
 
         // minify enable filter delete
