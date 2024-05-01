@@ -418,7 +418,7 @@ void generate_piece_moves(Move *const movelist,
     assert(mg <= 32767);
     assert(eg >= -32768);
     assert(eg <= 32767);
-    return (eg << 16) + mg;
+    return (mg << 16) + eg;
 }
 
 const i32 phases[] = {0, 1, 1, 2, 4, 0};
@@ -588,8 +588,8 @@ const i32 pawn_attacked_penalty[] = {S(63, 14), S(156, 140)};
     assert(phase >= 0);
 
     // Tapered eval with endgame scaling based on remaining pawn count of the stronger side
-    const i32 stronger_side_pawns_missing = 8 - count(pos.colour[score < 0] & pos.pieces[Pawn]);
-    return (int16_t(score) * phase + (score + 0x8000 >> 16) *
+    const i32 stronger_side_pawns_missing = 8 - count(pos.colour[int16_t(score) < 0] & pos.pieces[Pawn]);
+    return ((score + 0x8000 >> 16) * phase + int16_t(score) *
                                          (128 - stronger_side_pawns_missing * stronger_side_pawns_missing) / 128 *
                                          (24 - phase)) /
            24;
