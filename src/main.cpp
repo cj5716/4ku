@@ -800,7 +800,7 @@ i32 alphabeta(Position &pos,
                                hh_table);
         else {
             // Late move reduction
-            i32 reduction = depth > 3 && num_moves_evaluated > 1 && gain <= max_material[piece_on(pos, move.from)]
+            i32 reduction = depth > 3 && num_moves_evaluated > 1 && gain < max_material[piece_on(pos, move.from)]
                                 ? max(num_moves_evaluated / 13 + depth / 14 + (alpha == beta - 1) + !improving -
                                           min(max(hh_table[pos.flipped][!gain][move.from][move.to] / 128, -2), 2),
                                       0)
