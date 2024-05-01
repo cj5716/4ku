@@ -84,6 +84,7 @@ struct [[nodiscard]] Stack {
     Move moves[256];
     Move moves_evaluated[256];
     i32 move_scores[256];
+    Position pos;
     Move move;
     Move killer;
     i32 score;
@@ -624,8 +625,7 @@ const i32 pawn_attacked_penalty[] = {S(63, 14), S(156, 140)};
     return hash;
 }
 
-i32 alphabeta(Position &pos,
-              i32 alpha,
+i32 alphabeta(i32 alpha,
               const i32 beta,
               i32 depth,
               const i32 ply,
@@ -642,6 +642,8 @@ i32 alphabeta(Position &pos,
     assert(ply >= 0);
     assert(stack != nullptr);
     assert(hh_table != nullptr);
+
+    Position &pos = stack[ply].pos;
 
     // Don't overflow the stack
     if (ply > 127)
@@ -703,11 +705,10 @@ i32 alphabeta(Position &pos,
         if (depth > 2 && static_eval >= beta && static_eval >= stack[ply].score && do_null &&
             pos.colour[0] & ~(pos.pieces[Pawn] | pos.pieces[King])) {
             assert(ply > 0);
-            Position npos = pos;
-            flip(npos);
-            npos.ep = 0;
-            if (-alphabeta(npos,
-                           -beta,
+            stack[ply + 1].pos = pos;
+            flip(stack[ply + 1].pos);
+            stack[ply + 1].pos.ep = 0;
+            if (-alphabeta(-beta,
                            -alpha,
                            depth - 4 - depth / 5 - min((static_eval - beta) / 196, 3),
                            ply + 1,
@@ -774,8 +775,8 @@ i32 alphabeta(Position &pos,
             static_eval + 105 * depth + gain < alpha)
             break;
 
-        Position npos = pos;
-        if (!makemove(npos, move))
+        stack[ply + 1].pos = pos;
+        if (!makemove(stack[ply + 1].pos, move))
             continue;
 
         // minify enable filter delete
@@ -785,8 +786,7 @@ i32 alphabeta(Position &pos,
         i32 score;
         if (!num_moves_evaluated)
         full_window:
-            score = -alphabeta(npos,
-                               -beta,
+            score = -alphabeta(-beta,
                                -alpha,
                                depth - 1,
                                ply + 1,
@@ -808,8 +808,7 @@ i32 alphabeta(Position &pos,
 
         zero_window:
             assert(reduction >= 0);
-            score = -alphabeta(npos,
-                               -alpha - 1,
+            score = -alphabeta(-alpha - 1,
                                -alpha,
                                depth - reduction - 1,
                                ply + 1,
@@ -941,6 +940,7 @@ auto iteratively_deepen(Position &pos,
                         const i32 allocated_time,
                         const u64 start_time) {
     Stack stack[128] = {};
+    stack[0].pos = pos;
     // minify enable filter delete
     u64 nodes = 0;
     // minify disable filter delete
@@ -951,8 +951,7 @@ auto iteratively_deepen(Position &pos,
         for (i32 window = 28 + (score * score >> 14); ++research; window *= 2) {
             const i32 alpha = score - window;
             const i32 beta = score + window;
-            score = alphabeta(pos,
-                              alpha,
+            score = alphabeta(alpha,
                               beta,
                               i,
                               0,
