@@ -770,8 +770,8 @@ i32 alphabeta(Position &pos,
             break;
 
         // Forward futility pruning
-        if (ply > 0 && depth < 8 && !in_qsearch && !in_check && num_moves_evaluated &&
-            static_eval + 105 * depth + gain < alpha)
+        if (ply > 0 && depth < 8 && !gain && !in_check && num_moves_evaluated &&
+            static_eval + 105 * depth + 147 < alpha)
             break;
 
         Position npos = pos;
