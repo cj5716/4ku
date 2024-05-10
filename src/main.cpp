@@ -786,7 +786,7 @@ i32 alphabeta(Position &pos,
         i32 score;
         i32 reduction = depth > 3 && num_moves_evaluated > 1
                             ? max(num_moves_evaluated / 13 + depth / 14 + (alpha == beta - 1) + !improving -
-                                      min(max(hh_table[pos.flipped][!gain][move.from][move.to] / 128, -2), 2),
+                                      hh_table[pos.flipped][!gain][move.from][move.to] / 238,
                                   0)
                             : 0;
 
